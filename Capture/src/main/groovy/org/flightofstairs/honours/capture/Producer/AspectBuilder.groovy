@@ -46,7 +46,7 @@ public class AspectBuilder {
 package org.flightofstairs.honours.capture.agent;
 
 import org.flightofstairs.honours.capture.agent.Tracer;
-import org.flightofstairs.honours.capture.Call;
+import org.flightofstairs.honours.common.Call;
 
 public aspect Aspect {
 	

@@ -9,10 +9,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.flightofstairs.honours.capture.Call;
+
+import org.flightofstairs.honours.common.Call;
+
 import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
 
-public enum Tracer implements RemoteTracer {
+public enum Tracer {
 	INSTANCE;
 	
 	/**
@@ -31,44 +33,13 @@ public enum Tracer implements RemoteTracer {
 			Registry registry = LocateRegistry.getRegistry(port);
 
 			recorder = (RemoteRecorder) registry.lookup("Recorder");
-
-			Timer timer = new Timer();
-			TimerTask task = new TimerTask() {
-				@Override
-				public void run() {
-					Logger.getLogger(Tracer.class.getName()).log(Level.FINE, "Submitting calls.");
-					synchronized(toSend) {
-						try {
-							recorder.addCalls(toSend);
-							toSend.clear();
-						} catch (RemoteException ex) {
-							Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-						}
-					}
-				}
-			};
-			
-			Thread thread = new Thread() {
-				@Override
-				public void run() {
-					Logger.getLogger(Tracer.class.getName()).log(Level.FINE, "Ending trace.");
-					try {
-						recorder.addCalls(toSend);
-						recorder.end();
-					} catch (RemoteException ex) {
-						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-					}
-				}
-			};
-			
-			Runtime.getRuntime().addShutdownHook(thread);
-
-			timer.schedule(task, SUBMIT_DELAY, SUBMIT_DELAY);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		}
+		
+		initSubmit();
+		initShutdown();
 	}
 	
 	public void traceCall(Call call) {
@@ -77,6 +48,40 @@ public enum Tracer implements RemoteTracer {
 		}
 	}
 	
-	public boolean existanceTest() throws RemoteException { return true; }
 	
+	public void initShutdown() {
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				Logger.getLogger(Tracer.class.getName()).log(Level.FINE, "Ending trace.");
+				try {
+					recorder.addCalls(toSend);
+					recorder.end();
+				} catch (RemoteException ex) {
+					Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+				}
+			}
+		};
+
+		Runtime.getRuntime().addShutdownHook(thread);
+	}
+	
+	public void initSubmit() {
+		Timer timer = new Timer();
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				Logger.getLogger(Tracer.class.getName()).log(Level.FINE, "Submitting calls.");
+				synchronized(toSend) {
+					try {
+						recorder.addCalls(toSend);
+						toSend.clear();
+					} catch (RemoteException ex) {
+						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+					}
+				}
+			}
+		};
+		timer.schedule(task, SUBMIT_DELAY, SUBMIT_DELAY);
+	}
 }

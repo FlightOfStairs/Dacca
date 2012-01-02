@@ -12,23 +12,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.flightofstairs.honours.capture.Producer.AspectBuilder;
-import org.flightofstairs.honours.capture.Call;
-import org.flightofstairs.honours.capture.CallGraph;
+import org.flightofstairs.honours.common.Call;
+import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.capture.recorder.launchers.AspectJLauncher;
 import org.flightofstairs.honours.capture.recorder.launchers.PBLauncher;
 
 public class RMIRecorder extends UnicastRemoteObject implements Recorder, RemoteRecorder {
 	
-	/**
-	 * Will consider recording finished when it's been TIMEOUT ms since the last batch of calls
-	 */
-	public static final int TIMEOUT = 1000;
-	public static final int TEST_PERIOD = 100;
-	
-	private long lastRecieved;
-	
 	private final String pattern;
 	private final File jarFile;
+	
+	private boolean ended = true;
 	
 	private final CallGraph graph = new CallGraph();
 	
@@ -40,6 +34,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	}
 	
 	public void recordSession() {
+		ended = false;
 		try {
 			
 			int port = findFreePort();
@@ -54,10 +49,6 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			
 			launcher.run();
 			
-			// Sleep while we're getting data.
-			while(lastRecieved + TIMEOUT >= System.currentTimeMillis())
-				;
-			
 		} catch (RemoteException ex) {
 			Logger.getLogger(RMIRecorder.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (IOException ex) {
@@ -66,13 +57,13 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	}
 
 	public void addCalls(List<Call> calls) throws RemoteException {
-		lastRecieved = System.currentTimeMillis();
+		if(ended) throw new UnsupportedOperationException("Can't add calls after recording finished.");
 		
 		for(Call call : calls) graph.addCall(call);
 	}
 
 	public void end() throws RemoteException {
-		lastRecieved = 0; // End loop
+		ended = true;
 	}
 
 	public CallGraph getResults() { return graph; }

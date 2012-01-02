@@ -1,6 +1,6 @@
 package org.flightofstairs.honours.capture.recorder;
 
-import org.flightofstairs.honours.capture.Call;
+import org.flightofstairs.honours.common.Call;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
