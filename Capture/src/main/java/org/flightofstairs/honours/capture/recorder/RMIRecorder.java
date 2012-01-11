@@ -1,5 +1,11 @@
 package org.flightofstairs.honours.capture.recorder;
 
+import org.flightofstairs.honours.capture.Producer.AspectBuilder;
+import org.flightofstairs.honours.capture.recorder.launchers.AspectJLauncher;
+import org.flightofstairs.honours.capture.recorder.launchers.PBLauncher;
+import org.flightofstairs.honours.common.Call;
+import org.flightofstairs.honours.common.CallGraph;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,12 +17,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.flightofstairs.honours.capture.Producer.AspectBuilder;
-import org.flightofstairs.honours.common.Call;
-import org.flightofstairs.honours.common.CallGraph;
-import org.flightofstairs.honours.capture.recorder.launchers.AspectJLauncher;
-import org.flightofstairs.honours.capture.recorder.launchers.PBLauncher;
-
 public class RMIRecorder extends UnicastRemoteObject implements Recorder, RemoteRecorder {
 	
 	private final String pattern;
@@ -24,7 +24,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	
 	private boolean ended = true;
 	
-	private final CallGraph graph = new CallGraph();
+	private final CallGraph<String> graph = new CallGraph<>();
 	
 	public RMIRecorder(File jarFile, String pattern) throws RemoteException {
 		super();
@@ -49,8 +49,6 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			
 			launcher.run();
 			
-		} catch (RemoteException ex) {
-			Logger.getLogger(RMIRecorder.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (IOException ex) {
 			Logger.getLogger(RMIRecorder.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -69,10 +67,11 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	public CallGraph getResults() { return graph; }
 	
 	private int findFreePort() throws IOException {
-		  ServerSocket server = new ServerSocket(0);
-		  int port = server.getLocalPort();
-		  server.close();
-		  return port;
+		int port;
+		try (ServerSocket server = new ServerSocket(0)) {
+			port = server.getLocalPort();
+		}
+		return port;
 	}
 
 }

@@ -12,9 +12,8 @@ public class GroovyMain {
 		
 		recorder.recordSession();
 		
-		println System.getProperty("java.class.path");
-		println System.getProperty("java.home");
-		
+		def graph = recorder.getResults();
+
 		System.exit(0);
 	}
 }

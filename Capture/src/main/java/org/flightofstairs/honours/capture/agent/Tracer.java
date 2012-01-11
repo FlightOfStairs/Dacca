@@ -1,5 +1,8 @@
 package org.flightofstairs.honours.capture.agent;
 
+import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
+import org.flightofstairs.honours.common.Call;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,10 +13,6 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.flightofstairs.honours.common.Call;
-
-import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
-
 public enum Tracer {
 	INSTANCE;
 	
@@ -22,7 +21,7 @@ public enum Tracer {
 	 */ 
 	public static final int SUBMIT_DELAY = 200;
 	
-	private final List<Call> toSend = new LinkedList<Call>();
+	private final List<Call> toSend = new LinkedList<>();
 	
 	private final RemoteRecorder recorder;
 	
@@ -49,7 +48,7 @@ public enum Tracer {
 	}
 	
 	
-	public void initShutdown() {
+	private void initShutdown() {
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
@@ -66,7 +65,7 @@ public enum Tracer {
 		Runtime.getRuntime().addShutdownHook(thread);
 	}
 	
-	public void initSubmit() {
+	private void initSubmit() {
 		Timer timer = new Timer();
 		TimerTask task = new TimerTask() {
 			@Override
