@@ -1,5 +1,6 @@
 package org.flightofstairs.honours.capture
 
+import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.capture.recorder.Recorder;
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
 
@@ -12,7 +13,9 @@ public class GroovyMain {
 		
 		recorder.recordSession();
 		
-		def graph = recorder.getResults();
+		CallGraph graph = recorder.getResults();
+		
+		graph.save(new File("orrery.callgraph"))
 
 		System.exit(0);
 	}
