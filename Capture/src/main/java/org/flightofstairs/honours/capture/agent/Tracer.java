@@ -1,6 +1,7 @@
 package org.flightofstairs.honours.capture.agent;
 
 import java.rmi.ConnectException;
+import java.rmi.NotBoundException;
 import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
 import org.flightofstairs.honours.common.Call;
 
@@ -33,7 +34,7 @@ public enum Tracer {
 			Registry registry = LocateRegistry.getRegistry(port);
 
 			recorder = (RemoteRecorder) registry.lookup("Recorder");
-		} catch (Exception ex) {
+		} catch (NumberFormatException | RemoteException | NotBoundException ex) {
 			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		}
