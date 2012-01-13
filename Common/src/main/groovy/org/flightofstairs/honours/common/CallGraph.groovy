@@ -19,24 +19,28 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	private long lastUpdate = 0;
 	private long lastUpdateTest = 0;
 	
-	private final Graph<V, CallCount> graph = new DirectedSparseMultigraph<V, CallCount>();
+	private final Graph<V, ClassRelation> graph = new DirectedSparseMultigraph<V, ClassRelation>();
 	
+	private transient Graph<V, ClassRelation> unmodifiableGraph;
 	private transient Set<CallGraphListener> listeners;
-	
+		
 	@Requires({ call != null })
 	@Ensures({ def callRef = call;
 			graph.containsVertex(call.caller) && graph.containsVertex(call.callee) &&
-			graph.findEdgeSet(call.caller, call.callee).find({ it.call.equals(callRef) }) != null
+			graph.findEdge(call.caller, call.callee).countCall(call) >= 1
 		})
 	@Synchronized("graphLock")
 	public void addCall(final Call call) {
 		graph.addVertex(call.caller);
 		graph.addVertex(call.callee);
 		
-		def existing = graph.findEdgeSet(call.caller, call.callee).find({ it.call.equals(call) });
+		def existing = graph.findEdge(call.caller, call.callee);
 		
-		if(existing == null) graph.addEdge(new CallCount(call), call.caller, call.callee);
-		else existing.increment();
+		if(existing == null) {
+			existing = new ClassRelation();
+			graph.addEdge(existing, call.caller, call.callee);
+		}
+		existing.addCall(call);
 		
 		lastUpdate = System.currentTimeMillis();
 	}
@@ -62,15 +66,19 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	@Synchronized("graphLock")
 	public List<Call> calls(boolean onlyUnique = true) {
 		def results = [];
-		for(CallCount count in graph.getEdges()) {
-			for(int i in 1..(onlyUnique ? 1 : count.count )) results << count.call;
+		
+		for(ClassRelation relation in graph.getEdges()) {
+			results.addAll relation.getCalls(onlyUnique);
 		}
 		return results
 	}
 	
 	@Ensures({ result != null })
-	public Graph<V, CallCount> getGraph() {
-		return Graphs.unmodifiableDirectedGraph(graph);
+	public Graph<V, ClassRelation> getGraph() {
+		if(unmodifiableGraph == null)
+			unmodifiableGraph = Graphs.unmodifiableDirectedGraph(graph);
+			
+		return unmodifiableGraph;
 	}
 	
 	@Requires({ ! file.isDirectory() })
