@@ -1,5 +1,6 @@
 package org.flightofstairs.honours.capture.agent;
 
+import java.rmi.ConnectException;
 import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
 import org.flightofstairs.honours.common.Call;
 
@@ -75,6 +76,9 @@ public enum Tracer {
 					try {
 						recorder.addCalls(toSend);
 						toSend.clear();
+					} catch (ConnectException ex) {
+						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+						System.exit(1);
 					} catch (RemoteException ex) {
 						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 					}
