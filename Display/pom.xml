@@ -119,6 +119,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <artifactId>jung-visualization</artifactId>
       <version>2.0.1</version>
     </dependency>
+    <dependency>
+      <artifactId>collections-generic</artifactId>
+      <groupId>net.sourceforge.collections</groupId>
+      <type>jar</type>
+      <version>4.01</version>
+    </dependency>
   </dependencies>
   
   <repositories>
