@@ -6,7 +6,7 @@ import edu.uci.ics.jung.algorithms.scoring.HITS
 import org.apache.commons.collections15.Transformer;
 
 import org.flightofstairs.honours.common.CallGraph;
-import org.flightofstairs.honours.common.CallCount;
+import org.flightofstairs.honours.common.ClassRelation;
 
 import org.gcontracts.annotations.*
 
@@ -23,11 +23,11 @@ public class HITSWeighted<V extends Serializable> implements ClassScorer {
 		
 		Graph<V, ?> graph = callGraph.getGraph();
 		
-		def hits = new HITS(graph, { it.count } as Transformer , ALPHA);
+		def hits = new HITS(graph, { it.callVariety() } as Transformer , ALPHA);
 		
 		hits.evaluate();
 		
-		callGraph.each {
+		callGraph.classes().each {
 			results[it] = scoreExtractor.transform(hits.getVertexScore(it));
 		}
 		

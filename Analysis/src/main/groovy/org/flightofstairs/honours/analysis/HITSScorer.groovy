@@ -26,7 +26,7 @@ public class HITSScorer<V extends Serializable> implements ClassScorer {
 		
 		hits.evaluate();
 		
-		callGraph.each {
+		callGraph.classes().each {
 			results[it] = scoreExtractor.transform(hits.getVertexScore(it));
 		}
 		
