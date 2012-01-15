@@ -23,7 +23,7 @@ class RankDecoratorTest extends GroovyTestCase {
 		}
 	}
 	
-	void testDecorator() {
+	void testRankDecorator() {
 		Scorers.scorers.each {
 			def unScaled = it.rank(orrery);
 			def scaled = (new RankDecorator(it)).rank(orrery);
@@ -36,6 +36,16 @@ class RankDecoratorTest extends GroovyTestCase {
 				})
 			
 			assertEquals(scaledClasses, unScaledClasses);
+		}
+	}
+	
+	void testCacheDecorator() {
+		Scorers.scorers.each {
+			def results = it.rank(orrery);
+			
+			def cached = new CacheDecorator(orrery, it);
+			
+			assertEquals(results, cached.rank(orrery));
 		}
 	}
 	
