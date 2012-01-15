@@ -20,7 +20,7 @@ public class CacheDecorator<V extends Serializable> implements ClassScorer {
 		this.callGraph = callGraph;
 		this.delegate = delegate;
 		
-		callGraph.addListener({ synchronised(cacheLock) { cache = null } } as CallGraphListener)
+		callGraph.addListener({ synchronized(cacheLock) { cache = null } } as CallGraphListener)
 	}
 	
 	@Requires({ this.callGraph == callGraph })
