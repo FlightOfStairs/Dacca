@@ -21,6 +21,8 @@ class TextFitShape<V> implements Transformer {
 		this.context = context;
 	}
 	
+	@Requires({ vertex != null })
+	@Ensures({ result != null })
 	public Shape transform(V vertex) {
 		def stringTransformer = context.getVertexLabelTransformer();
 		

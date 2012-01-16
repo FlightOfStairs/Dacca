@@ -7,6 +7,10 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import org.flightofstairs.honours.common.CallGraph;
 
+import org.junit.Ignore
+
+import org.flightofstairs.honours.analysis.HITSScorer;
+
 class GraphPanelTest extends GroovyTestCase {
 	private CallGraph orrery;
 	
@@ -18,8 +22,14 @@ class GraphPanelTest extends GroovyTestCase {
 		orrery = CallGraph.open(file);
 	}
 	
-	void testStatic() {
-		present(new GraphPanel(orrery));
+//	void testStatic() {
+//		present(new GraphPanel(orrery));
+//	}
+	
+	void testSetScorer() {
+		def gp = new GraphPanel(orrery);
+		gp.setScorer(new HITSScorer());
+		present(gp);
 	}
 	
 	private void present(JPanel panel) {

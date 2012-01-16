@@ -18,73 +18,102 @@ import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.util.Animator;
 import edu.uci.ics.jung.algorithms.layout.util.VisRunner;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 
 import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.Predicate;
 
 import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.common.CallGraphListener;
+import org.flightofstairs.honours.analysis.ClassScorer;
+import org.flightofstairs.honours.analysis.NullScorer;
+import org.flightofstairs.honours.analysis.CacheDecorator;
+import org.flightofstairs.honours.analysis.RankDecorator;
+
+import java.util.logging.Logger;
 
 import org.gcontracts.annotations.*
 
-@Invariant({ graphLayout != null })
-public class GraphPanel<V extends Serializable> extends JPanel implements CallGraphListener {
+@Invariant({
+		graphLayout != null &&
+		scorer != null
+	})
+public class GraphPanel<V extends Serializable> extends JPanel {
 	public static final int DEFAULT_X = 800;
 	public static final int DEFAULT_Y = 800;
 	
-	private static final Color CLASS_COLOUR = new Color(255, 255, 255, 220);
-	
-	public static final Transformer<V, String> FullClassNameTransformer = {
-		it.toString()
-	} as Transformer;
-	
-	public static final Transformer<V, String> ShortClassNameTransformer = {
-		def parts = it.toString().tokenize('.');
-		return parts[parts.size() - 1];
-	} as Transformer;
-		
 	private final CallGraph<V> callGraph;
 	
-	private AbstractLayout<V, ?> graphLayout;
+	private final AbstractLayout<V, ?> graphLayout;
 	private final VisualizationViewer<V, ?> viewer;
+	
+	private ClassScorer scorer = new NullScorer();
 	
 	public GraphPanel(CallGraph<V> callGraph) {
 		this.callGraph = callGraph;
 		
-		graphLayout = new FRLayout2(callGraph.getGraph());
+		graphLayout = new FRLayout(callGraph.getGraph());
 		
 		graphLayout.setSize(new Dimension(DEFAULT_X, DEFAULT_Y));
 		
-		Relaxer relaxer = new VisRunner((IterativeContext)graphLayout);
+		Relaxer relaxer = new VisRunner((IterativeContext) graphLayout);
 		relaxer.stop();
 		relaxer.prerelax();
 
 		Layout staticLayout = new StaticLayout(callGraph.getGraph(), graphLayout);
 
         viewer = new VisualizationViewer(staticLayout, new Dimension(DEFAULT_X, DEFAULT_Y));
-		
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 		
-		viewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.CubicCurve());
-		
-		setClassTransformer(ShortClassNameTransformer);
-		
-		viewer.getRenderContext().setVertexShapeTransformer(new TextFitShape(viewer.getRenderContext()))
-		viewer.getRenderContext().setVertexFillPaintTransformer({ CLASS_COLOUR } as Transformer)
+		viewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
+				
+		viewer.getRenderContext().setVertexFillPaintTransformer({
+				new Color(100, 255, 100, (int) (255 * scorer.rank(callGraph)[it])) 
+			} as Transformer)
+				
+		viewer.setGraphMouse(new DefaultModalGraphMouse());
 		
 		setLayout(new BorderLayout());
 		add(viewer);
 		
+		refreshTransformers();
+		
 		validate();
 		
-		callGraph.addListener(this);
+		callGraph.addListener({ redraw() } as CallGraphListener);
 	}
 	
-	public void setClassTransformer(Transformer<V, String> transformer) {
-		viewer.getRenderContext().setVertexLabelTransformer(transformer);
+	@Requires({ scorer != null })
+	public void setScorer(ClassScorer scorer) {
+		scorer = new RankDecorator(scorer);
+		scorer = new CacheDecorator(callGraph, scorer);
+		this.scorer = scorer;
+
+		refreshTransformers();
 	}
 	
-	@Requires({callGraph == this.callGraph})
-	public void callGraphChange(CallGraph callGraph) {
+	private void refreshTransformers() {
+		viewer.getRenderContext().setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
+		
+		def hidePredicate = new HidePredicate(callGraph, scorer, viewer.getRenderContext());
+		
+		viewer.getRenderContext().setVertexShapeTransformer(new HideTransformers(
+				hidePredicate,
+				new TextFitShape(viewer.getRenderContext()),
+				{ new Rectangle(-3, -3, 6, 6) } as Transformer
+				))
+			
+		viewer.getRenderContext().setVertexLabelTransformer(new HideTransformers(
+			hidePredicate,
+			NameTransformers.Short,
+			{ "" } as Transformer
+			));
+
+		redraw();
+	}
+	
+	private void redraw() {
 		graphLayout.initialize();
 		
 		Relaxer relaxer = new VisRunner((IterativeContext)graphLayout);
@@ -98,8 +127,6 @@ public class GraphPanel<V extends Serializable> extends JPanel implements CallGr
 		Animator animator = new Animator(lt);
 		animator.start();
 		
-		viewer.repaint();
-
 		relaxer.resume();
 	}
 }
