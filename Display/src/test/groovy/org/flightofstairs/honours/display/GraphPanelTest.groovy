@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import org.flightofstairs.honours.common.CallGraph;
 
+import java.awt.Dimension;
+
 import org.junit.Ignore
 
 import org.flightofstairs.honours.analysis.HITSScorer;
@@ -28,6 +30,7 @@ class GraphPanelTest extends GroovyTestCase {
 	
 	void testSetScorer() {
 		def gp = new GraphPanel(orrery);
+		gp.setPreferredSize(new Dimension(800, 800));
 		gp.setScorer(new HITSScorer());
 		present(gp);
 	}

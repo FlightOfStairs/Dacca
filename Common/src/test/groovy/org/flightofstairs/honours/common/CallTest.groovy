@@ -1,4 +1,4 @@
-import org.flightofstairs.honours.common.Call
+package org.flightofstairs.honours.common
 
 class CallTest extends GroovyTestCase {
 	void testEquals() {

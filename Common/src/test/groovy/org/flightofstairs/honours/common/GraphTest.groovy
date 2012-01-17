@@ -1,5 +1,4 @@
-import org.flightofstairs.honours.common.Call
-import org.flightofstairs.honours.common.CallGraph
+package org.flightofstairs.honours.common
 
 import edu.uci.ics.jung.graph.Graph
 import edu.uci.ics.jung.graph.util.Graphs

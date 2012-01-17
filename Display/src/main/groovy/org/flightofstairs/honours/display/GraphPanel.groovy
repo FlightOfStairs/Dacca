@@ -63,7 +63,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 
 		Layout staticLayout = new StaticLayout(callGraph.getGraph(), graphLayout);
 
-        viewer = new VisualizationViewer(staticLayout, new Dimension(DEFAULT_X, DEFAULT_Y));
+        viewer = new VisualizationViewer(staticLayout);
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 		
 		viewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
@@ -75,7 +75,8 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		viewer.setGraphMouse(new DefaultModalGraphMouse());
 		
 		setLayout(new BorderLayout());
-		add(viewer);
+		
+		add(viewer, BorderLayout.CENTER);
 		
 		refreshTransformers();
 		
