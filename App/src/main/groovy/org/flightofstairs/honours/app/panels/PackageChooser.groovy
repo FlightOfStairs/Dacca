@@ -9,6 +9,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.BorderLayout;
 
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel;
@@ -18,32 +19,28 @@ import org.gcontracts.annotations.*
 import groovy.transform.Synchronized
 
 class PackageChooser extends JPanel {
-	public static final int DEFAULT_X = 250;
-	public static final int DEFAULT_Y = 500;
-	
-	private final TreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode("Packages"));
+	private final DefaultTreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode("Packages"));
 	
 	private final CheckboxTree tree;
 	
 	private final List<NotificationListener> listeners = [];
 	
-	public PackageChooser(int x = DEFAULT_X, int y = DEFAULT_Y) {
+	public PackageChooser() {
 		tree = new CheckboxTree(model);
 		
 		tree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_PRESERVING_CHECK)
 		
 		JScrollPane sp = new JScrollPane(tree);
 		
-		sp.setPreferredSize(new Dimension(x, y));
-		
-		add(sp);
+		setLayout(new BorderLayout());
+		add(sp, BorderLayout.CENTER);
 		
 		tree.addTreeCheckingListener({ notifyListeners() } as TreeCheckingListener);
 	}
 	
 	@Requires({ file != null && file.exists() })
 	public void setJarFile(File file) {
-		model.getRoot().removeAllChildren();
+		model.setRoot(new DefaultMutableTreeNode(file.getName()))
 		
 		addPackages(model.getRoot(), jarPackages(file))
 		
@@ -120,7 +117,6 @@ class PackageChooser extends JPanel {
 				usedPackages << parts[0..<(parts.size() - 1)].join(".")
 			}
 		}
-		
 		
 		def packages = [] as Set
 		usedPackages.each {
