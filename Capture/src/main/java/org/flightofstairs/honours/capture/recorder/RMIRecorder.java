@@ -16,6 +16,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.flightofstairs.honours.capture.recorder.launchers.JPBLauncher;
 
 public class RMIRecorder extends UnicastRemoteObject implements Recorder, RemoteRecorder {
 	
@@ -24,7 +25,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	
 	private boolean ended = true;
 	
-	private final CallGraph<String> graph = new CallGraph<>();
+	private final CallGraph<String> graph = new CallGraph<String>();
 	
 	public RMIRecorder(File jarFile, String pattern) throws RemoteException {
 		super();
@@ -33,6 +34,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		this.jarFile = jarFile;
 	}
 	
+	@Override
 	public void recordSession() {
 		ended = false;
 		try {
@@ -54,23 +56,26 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		}
 	}
 
+	@Override
 	public void addCalls(List<Call> calls) throws RemoteException {
 		if(ended) throw new UnsupportedOperationException("Can't add calls after recording finished.");
 		
 		for(Call call : calls) graph.addCall(call);
 	}
 
+	@Override
 	public void end() throws RemoteException {
 		ended = true;
 	}
 
+	@Override
 	public CallGraph getResults() { return graph; }
 	
 	private int findFreePort() throws IOException {
 		int port;
-		try (ServerSocket server = new ServerSocket(0)) {
-			port = server.getLocalPort();
-		}
+		ServerSocket server = new ServerSocket(0);
+		port = server.getLocalPort();
+		server.close();
 		return port;
 	}
 

@@ -11,24 +11,23 @@ import org.flightofstairs.honours.analysis.HITSScorer;
 
 public class App {
 	public static void main(String[] args) {
-		def inJar = new File("/home/alistair/Projects2011/JHotDraw/dist/JHotDraw.jar");
+		def inJar = new File(getClass().getResource("/JHotDraw.jar").getFile()); // TODO delete resource when this changes
 		
 		Recorder recorder = new RMIRecorder(inJar, "within(orrery..*) || within(CH..*)");
 				
 		def graph = recorder.getResults();
-		
-		Thread recordThread = new Thread({ recorder.recordSession() } as Runnable);
-		
+				
 		def gp = new GraphPanel(graph);
 		gp.setScorer(new HITSScorer());
 		
-		def frame = new JFrame("GraphStuff");
+		def frame = new JFrame("Graph Stuff");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		frame.getContentPane().add(gp);
 		frame.pack();
 		frame.show();
 		
+		Thread recordThread = new Thread({ recorder.recordSession() } as Runnable);
 		recordThread.start();
 	}
 }

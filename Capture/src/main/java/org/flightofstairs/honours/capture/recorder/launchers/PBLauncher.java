@@ -19,6 +19,7 @@ public class PBLauncher implements AspectJLauncher {
 		this.recorderPort = recorderPort;
 	}
 	
+	@Override
 	public void run() {
 		String javaPath = System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java";
 
@@ -32,22 +33,24 @@ public class PBLauncher implements AspectJLauncher {
 		if(weaver.length() == 0) throw new RuntimeException("Can't find AspectJ weaver on cp.");
 
 		String main = "";
-		try(JarInputStream jarStream = new JarInputStream(new FileInputStream(jar))) {
+		try {
+			JarInputStream jarStream = new JarInputStream(new FileInputStream(jar));
 			main = jarStream.getManifest().getMainAttributes().getValue("Main-Class");
+			jarStream.close();
 		} catch (IOException ex) {
 			Logger.getLogger(PBLauncher.class.getName()).log(Level.SEVERE, null, ex);
 			throw new RuntimeException("Could not find main class in jar.");
-		}
+		} 
 
 		cp = jar.getAbsolutePath() + File.pathSeparatorChar + cp;
 		cp = aspectJar.getAbsolutePath() + File.pathSeparatorChar + cp;
-
+		
 		ProcessBuilder processBuilder = new ProcessBuilder(
 				javaPath,
 				"-Dorg.flightofstairs.honours.capture.port=" + recorderPort,
 				"-cp", cp,
 				"-javaagent:" + weaver,
-				main).inheritIO();
+				main); // TODO add inheritio back.
 
 		processBuilder.environment().put("ASPECTPATH", aspectJar.getAbsolutePath());
 
@@ -55,7 +58,9 @@ public class PBLauncher implements AspectJLauncher {
 			Process process = processBuilder.start();
 
 			process.waitFor();
-		} catch (InterruptedException | IOException ex) {
+		} catch (InterruptedException ex) {
+			Logger.getLogger(PBLauncher.class.getName()).log(Level.SEVERE, null, ex);
+		} catch(IOException ex) {
 			Logger.getLogger(PBLauncher.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}

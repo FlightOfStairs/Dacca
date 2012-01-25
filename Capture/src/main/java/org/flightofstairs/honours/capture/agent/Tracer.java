@@ -23,7 +23,7 @@ public enum Tracer {
 	 */ 
 	public static final int SUBMIT_DELAY = 200;
 	
-	private final List<Call> toSend = new LinkedList<>();
+	private final List<Call> toSend = new LinkedList<Call>();
 	
 	private final RemoteRecorder recorder;
 	
@@ -34,7 +34,13 @@ public enum Tracer {
 			Registry registry = LocateRegistry.getRegistry(port);
 
 			recorder = (RemoteRecorder) registry.lookup("Recorder");
-		} catch (NumberFormatException | RemoteException | NotBoundException ex) {
+		} catch (NumberFormatException  ex) {
+			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
+		} catch (RemoteException ex) {
+			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
+		} catch (NotBoundException ex) {
 			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		}
@@ -79,7 +85,6 @@ public enum Tracer {
 						toSend.clear();
 					} catch (ConnectException ex) {
 						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-						System.exit(1);
 					} catch (RemoteException ex) {
 						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 					}
