@@ -2,7 +2,6 @@ package org.flightofstairs.honours.capture.recorder;
 
 import org.flightofstairs.honours.capture.Producer.AspectBuilder;
 import org.flightofstairs.honours.capture.recorder.launchers.AspectJLauncher;
-import org.flightofstairs.honours.capture.recorder.launchers.PBLauncher;
 import org.flightofstairs.honours.common.Call;
 import org.flightofstairs.honours.common.CallGraph;
 
@@ -47,7 +46,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			AspectBuilder builder = new AspectBuilder(pattern);
 			File aspectClass = builder.compileAspect();
 			
-			AspectJLauncher launcher = new PBLauncher(jarFile, aspectClass, port);
+			AspectJLauncher launcher = new JPBLauncher(jarFile, aspectClass, port);
 			
 			launcher.run();
 			

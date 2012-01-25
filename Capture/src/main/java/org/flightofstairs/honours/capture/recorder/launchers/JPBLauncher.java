@@ -36,7 +36,7 @@ public class JPBLauncher implements AspectJLauncher {
 
 		// Find weaver agent.
 		String weaver = "";
-		for(String path : cp.split(":"))
+		for(String path : cp.split(File.pathSeparator))
 			if(path.contains("aspectjweaver")) weaver = path;
 		
 		if(weaver.length() == 0) throw new RuntimeException("Can't find AspectJ weaver on cp.");
@@ -49,6 +49,7 @@ public class JPBLauncher implements AspectJLauncher {
 				.systemProperty("org.flightofstairs.honours.capture.port", recorderPort + "")
 				.jvmArg("-javaagent:" + weaver)
 				.mainClass(main);
+		
 		try {
 			Process p = jvm.launch(System.out, System.err);
 			
