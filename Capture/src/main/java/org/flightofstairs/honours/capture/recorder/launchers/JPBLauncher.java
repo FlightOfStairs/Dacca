@@ -44,6 +44,8 @@ public class JPBLauncher implements AspectJLauncher {
 		
 		JavaProcessBuilder jvm = new JavaProcessBuilder();
 		
+		for(String path : cp.split(File.pathSeparator)) jvm.classpath(path);
+				
 		jvm.classpath(jar)
 				.classpath(aspectJar)
 				.systemProperty("org.flightofstairs.honours.capture.port", recorderPort + "")
