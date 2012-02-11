@@ -8,6 +8,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jlibs.core.lang.JavaProcessBuilder;
 
+import org.flightofstairs.honours.capture.recorder.RMIRecorder;
+
 public class JPBLauncher implements Launcher {
 		
 	@Override
@@ -25,16 +27,17 @@ public class JPBLauncher implements Launcher {
 		}
 		
 		JavaProcessBuilder jvm = new JavaProcessBuilder();
-		
+
 		String cp = System.getProperty("java.class.path");
+
 		for(String path : cp.split(File.pathSeparator)) jvm.classpath(path);
 		for(String path : launchConfig.additionalClassPaths()) jvm.classpath(path);
-	
-		jvm.jvmArg(launchConfig.getJVMArguments());
-		jvm.arg(launchConfig.getProgramArguments());
-				
+		
+		for(String arg : launchConfig.getJVMArguments()) jvm.jvmArg(arg);
+		for(String arg : launchConfig.getProgramArguments()) jvm.arg(arg);
+		
 		jvm.classpath(launchConfig.getJARFile()).mainClass(main);
-				
+		
 		try {
 			Process p = jvm.launch(System.out, System.err);
 			

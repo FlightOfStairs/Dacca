@@ -29,7 +29,6 @@ public enum Tracer {
 	private Tracer() throws ExceptionInInitializerError {		
 		try {
 			int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
-			System.out.println(port);
 			
 			Registry registry = LocateRegistry.getRegistry(port);
 
@@ -47,8 +46,6 @@ public enum Tracer {
 		
 		initSubmit();
 		initShutdown();
-		
-		System.out.println("lol");
 	}
 	
 	public void traceCall(Call call) {

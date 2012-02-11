@@ -3,8 +3,6 @@ package org.flightofstairs.honours.capture.recorder;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -28,6 +26,8 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	
 	private boolean ended = true;
 	
+	public static int port;
+	
 	private final CallGraph<String> graph = new CallGraph<String>();
 	
 	public RMIRecorder(LaunchConfiguration launchConfig) throws RemoteException {
@@ -41,7 +41,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		ended = false;
 		try {
 			
-			int port = findFreePort();
+			port = findFreePort();
 			
 			Registry registry = LocateRegistry.createRegistry(port);
 			registry.rebind("Recorder", this);
@@ -95,7 +95,9 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		}
 		
 		@Override
-		public String getJVMArguments() {
+		public List<String> getJVMArguments() {
+			List<String> args = new LinkedList<String>();
+			
 			String cp = System.getProperty("java.class.path");
 
 			// Find weaver agent.
@@ -105,9 +107,11 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 
 			if(weaver.length() == 0) throw new RuntimeException("Can't find AspectJ weaver on cp.");
 			
-			return "-Dorg.flightofstairs.honours.capture.port=" + port + " "
-					+ "-javaagent:" + weaver + " "
-					+ delegate.getJVMArguments();
+			args.add("-javaagent:" + weaver);
+			args.add("-Dorg.flightofstairs.honours.capture.port=" + port);
+			args.addAll(delegate.getJVMArguments());
+			
+			return args;
 		}
 		
 		@Override
@@ -120,7 +124,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		}
 		
 		@Override public File getJARFile() { return delegate.getJARFile(); }
-		@Override public String getProgramArguments() { return delegate.getProgramArguments(); }
+		@Override public List<String> getProgramArguments() { return delegate.getProgramArguments(); }
 		@Override public List<String> packages() { return delegate.packages(); }
 	}
 }
