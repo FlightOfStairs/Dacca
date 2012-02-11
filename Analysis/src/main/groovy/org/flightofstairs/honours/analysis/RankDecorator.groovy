@@ -15,8 +15,8 @@ public class RankDecorator<V extends Serializable> implements ClassScorer {
 	}
 	
 	@Ensures({ result.values().every { it >= 0 && it <= 1 } })
-	public Map<V, Double> rank(CallGraph<V> callGraph) {
-		Map<V, Double> scores = scorer.rank(callGraph);
+	public Map<V, Double> rank() {
+		Map<V, Double> scores = scorer.rank();
 		
 		def sortedClasses = scores.keySet().sort { a, b ->
 			Math.abs(scores[a] - scores[b]) > EPSILON ?
@@ -30,10 +30,6 @@ public class RankDecorator<V extends Serializable> implements ClassScorer {
 			scores[sortedClasses[i]] = i * scale;
 			
 		return scores;
-	}
-	
-	public String getName() {
-		return "Ranked " + scorer.getName();
 	}
 }
 

@@ -5,9 +5,13 @@ import edu.uci.ics.jung.graph.Graph
 import org.flightofstairs.honours.common.CallGraph;
 
 public class MethodConnectivity<V extends Serializable> implements ClassScorer {
-	public String getName() { return "Method Connectivity"; }
+	private final CallGraph callGraph;
 	
-	public Map<V, Double> rank(CallGraph<V> callGraph) {
+	public MethodConnectivity(CallGraph<String> callGraph) {
+		this.callGraph = callGraph;
+	} 
+
+	public Map<V, Double> rank() {
 		def results = [:];
 		
 		Graph<V, ?> graph = callGraph.getGraph();

@@ -16,9 +16,13 @@ public class HITSWeighted<V extends Serializable> implements ClassScorer {
 	
 	public static final double ALPHA = 0;
 	
-	public String getName() { return "Weighted HITS"; }
+	private final CallGraph callGraph;
 	
-	public Map<V, Double> rank(CallGraph<V> callGraph) {
+	public HITSWeighted(CallGraph<String> callGraph) {
+		this.callGraph = callGraph;
+	}
+
+	public Map<V, Double> rank() {
 		def results = [:]
 		
 		Graph<V, ?> graph = callGraph.getGraph();

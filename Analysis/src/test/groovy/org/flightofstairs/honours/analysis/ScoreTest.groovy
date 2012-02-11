@@ -18,15 +18,15 @@ class RankDecoratorTest extends GroovyTestCase {
 	}
 	
 	void testBasic() {
-		Scorers.scorers.each {
-			it.rank(orrery);
+		scorers(orrery).each {
+			it.rank();
 		}
 	}
 	
 	void testRankDecorator() {
-		Scorers.scorers.each {
-			def unScaled = it.rank(orrery);
-			def scaled = (new RankDecorator(it)).rank(orrery);
+		scorers(orrery).each {
+			def unScaled = it.rank();
+			def scaled = (new RankDecorator(it)).rank();
 			
 			def unScaledClasses = unScaled.keySet().sort ({ a, b ->
 					Math.abs(unScaled[a] - unScaled[b]) > 0.000001 ? unScaled[a] <=> unScaled[b] : a <=> b
@@ -40,18 +40,18 @@ class RankDecoratorTest extends GroovyTestCase {
 	}
 	
 	void testCacheDecorator() {
-		Scorers.scorers.each {
-			def results = it.rank(orrery);
+		scorers(orrery).each {
+			def results = it.rank();
 			
 			def cached = new CacheDecorator(orrery, it);
 			
-			assertEquals(results, cached.rank(orrery));
+			assertEquals(results, cached.rank());
 		}
 	}
 	
 	void testBest() {
-		Scorers.scorers.each {
-			def scores = it.rank(orrery)
+		scorers(orrery).each {
+			def scores = it.rank()
 			
 			def best = scores.keySet().max { scores[it] }
 			def parts = best.tokenize('.')
@@ -64,6 +64,10 @@ class RankDecoratorTest extends GroovyTestCase {
 			parts = best.tokenize('.')
 			assertTrue(top.contains(parts[parts.size() - 1]))
 		}
+	}
+	
+	private static List<ClassScorer> scorers(CallGraph callGraph) {
+		return [new Connectivity(callGraph), new HITSWeighted(callGraph), new HITSScorer(callGraph), new MethodConnectivity(callGraph)];
 	}
 }
 

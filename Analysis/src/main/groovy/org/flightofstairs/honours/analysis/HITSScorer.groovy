@@ -14,10 +14,14 @@ public class HITSScorer<V extends Serializable> implements ClassScorer {
 	Transformer<HITS.Scores, Double> scoreExtractor = { it.authority + it.hub } as Transformer;
 	
 	public static final double ALPHA = 0;
+
+	private final CallGraph callGraph;
 	
-	public String getName() { return "Unweighted HITS"; }
-	
-	public Map<V, Double> rank(CallGraph<V> callGraph) {
+	public HITSScorer(CallGraph<String> callGraph) {
+		this.callGraph = callGraph;
+	} 
+
+	public Map<V, Double> rank() {
 		def results = [:]
 		
 		Graph<V, ?> graph = callGraph.getGraph();

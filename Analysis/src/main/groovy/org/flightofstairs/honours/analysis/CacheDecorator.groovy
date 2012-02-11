@@ -12,7 +12,8 @@ public class CacheDecorator<V extends Serializable> implements ClassScorer {
 	
 	private final ClassScorer<V> delegate;
 	
-	private Object cacheLock = new Object();
+	private final Object cacheLock = new Object();
+	
 	private Map<V, Double> cache;
 	
 	@Requires({ callGraph != null && delegate != null && ! (delegate instanceof CacheDecorator) })
@@ -26,13 +27,9 @@ public class CacheDecorator<V extends Serializable> implements ClassScorer {
 	@Requires({ this.callGraph == callGraph })
 	@Ensures({ result != null })
 	@Synchronized("cacheLock")
-	public Map<V, Double> rank(CallGraph<V> callGraph) {
-		if(cache == null) cache = delegate.rank(callGraph);
+	public Map<V, Double> rank() {
+		if(cache == null) cache = delegate.rank();
 		return cache;
-	}
-	
-	public String getName() {
-		return delegate.getName();
 	}
 }
 
