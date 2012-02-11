@@ -2,7 +2,6 @@ package org.flightofstairs.honours.app.panels
 
 import java.util.jar.JarFile;
 
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
 import javax.swing.tree.TreeNode;
@@ -18,31 +17,33 @@ import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingListener;
 import org.gcontracts.annotations.*
 import groovy.transform.Synchronized
 
-class PackageChooser extends JPanel {
+class PackageChooser extends CheckboxTree {
 	private final DefaultTreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode("Packages"));
-	
-	private final CheckboxTree tree;
-	
+		
 	private final List<NotificationListener> listeners = [];
 	
 	public PackageChooser() {
-		tree = new CheckboxTree(model);
+		super();
 		
-		tree.getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_PRESERVING_CHECK)
+		setModel(model);
 		
-		JScrollPane sp = new JScrollPane(tree);
+		getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_PRESERVING_CHECK)
 		
-		setLayout(new BorderLayout());
-		add(sp, BorderLayout.CENTER);
-		
-		tree.addTreeCheckingListener({ notifyListeners() } as TreeCheckingListener);
+		addTreeCheckingListener({ notifyListeners() } as TreeCheckingListener);
 	}
 	
 	@Requires({ file != null && file.exists() })
 	public void setJarFile(File file) {
 		model.setRoot(new DefaultMutableTreeNode(file.getName()))
+		setPackageList(packagesUsed(jarClasses(file)));
 		
-		addPackages(model.getRoot(), jarPackages(file))
+		expandRow(0);
+	}
+	
+	@Requires({ packages != null })
+	private setPackageList(List<String> packages) {
+		
+		addPackages(model.getRoot(), packages)
 		
 		notifyListeners();
 	}
@@ -95,7 +96,7 @@ class PackageChooser extends JPanel {
 	
 	@Ensures({ result != null })
 	public List<String> getSelectedPackages() {
-		def roots = tree.getCheckingRoots();
+		def roots = getCheckingRoots();
 		
 		if(roots.size() == 1 && roots[0].getPath().size() == 1)
 			return model.getRoot().children.collect { it.getUserObject() }
@@ -103,29 +104,37 @@ class PackageChooser extends JPanel {
 		return roots.collect { it.getPath()[1..<it.getPath().size()].join(".") }
 	}
 	
+	@Requires({ classes != null })
+	@Ensures({ result != null })
+	private static List<String> packagesUsed(List<String> classes) {
+		def packages = [] as Set
+		
+		classes.each {
+			def parts = it.tokenize('.')
+			
+			(0..<parts.size() - 2).each {
+				packages << parts[0..it].join(".");
+			}
+		}
+		
+		return packages.sort { it }
+	}
+	
 	@Requires({ file != null && file.exists() })
-	@Ensures({ result})
-	private static List<String> jarPackages(File file) {
+	@Ensures({ result != null && ! result.any { it.endsWith(".class") } })
+	private static List<String> jarClasses(File file) {
 		JarFile jarFile = new JarFile(file);
 		
-		def usedPackages = [] as Set;
+		def classes = [] as Set;
 
 		jarFile.entries().each {
 			def parts = it.getName().tokenize('.')
 			if(parts[parts.size() - 1].equals("class")) {
 				parts = it.getName().tokenize('/')		// TODO check this on windows.
-				usedPackages << parts[0..<(parts.size() - 1)].join(".")
+				classes << parts[0..<parts.size()].join(".")
 			}
 		}
 		
-		def packages = [] as Set
-		usedPackages.each {
-			def parts = it.tokenize('.')
-			
-			(0..<parts.size()).each {
-				packages << parts[0..it].join(".");
-			}
-		}
-		return packages.sort { it };
+		return classes.sort { it };
 	}
 }

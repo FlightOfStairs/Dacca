@@ -41,7 +41,7 @@ class PackageChooserTest extends GroovyTestCase {
 		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
 		assertTrue(file.exists());
 		
-		assertEquals(expectedPackagesJHotDraw, PackageChooser.jarPackages(file));
+		assertEquals(expectedPackagesJHotDraw, PackageChooser.packagesUsed(PackageChooser.jarClasses(file)));
 	}
 	
 	void testDisplay() {
@@ -61,7 +61,10 @@ class PackageChooserTest extends GroovyTestCase {
 		
 		assertEquals(1, notifyCount);
 		
-		present(chooser);
+		def panel = new JPanel();
+		panel.add(chooser);
+		
+		present(panel);
 	}
 	
 	private void present(JPanel panel) {

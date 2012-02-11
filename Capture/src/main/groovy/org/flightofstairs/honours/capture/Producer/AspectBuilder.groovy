@@ -14,9 +14,9 @@ public class AspectBuilder {
 	
 	private final String code;
 	
-	@Requires({ pattern != null && pattern.length() != 0 })
-	public AspectBuilder(String pattern) {
-		this.code = TEMPLATE1 + pattern + TEMPLATE2;
+	@Requires({ packages != null })
+	public AspectBuilder(List<String> packages) {
+		this.code = TEMPLATE1 + packagesPattern(packages) + TEMPLATE2;
 	}
 	
 	@Ensures({ result.exists() })
@@ -40,6 +40,15 @@ public class AspectBuilder {
 		if(fails.size() != 0 || errors.size() != 0) throw new RuntimeException("Problem building aspects.");
 		
 		return new File(dir.getAbsolutePath() + File.separatorChar + ASPECT_JAR);
+	}
+	
+	//TODO write unit test.
+	@Requires({ packages != null })
+	@Ensures({ result != null })
+	private static String packagesPattern(List<String> packages) {
+		List<String> withins = packages.collect { "within(" + it + "..*)" }
+		
+		return withins.join(" || ")
 	}
 	
 	private final static TEMPLATE1 = """

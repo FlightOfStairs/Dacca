@@ -28,8 +28,11 @@ public enum Tracer {
 	private final RemoteRecorder recorder;
 	
 	private Tracer() throws ExceptionInInitializerError {		
+		System.exit(0);
+		
 		try {
 			int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
+			System.out.println(port);
 			
 			Registry registry = LocateRegistry.getRegistry(port);
 
@@ -47,6 +50,8 @@ public enum Tracer {
 		
 		initSubmit();
 		initShutdown();
+		
+		System.out.println("lol");
 	}
 	
 	public void traceCall(Call call) {

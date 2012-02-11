@@ -1,4 +1,4 @@
-package org.flightofstairs.honours.capture.recorder.launchers;
+package org.flightofstairs.honours.capture.launchers;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,23 +8,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jlibs.core.lang.JavaProcessBuilder;
 
-public class JPBLauncher implements AspectJLauncher {
-	
-	private final File jar;
-	private final File aspectJar;
-	private final int recorderPort;
-
-	public JPBLauncher(File jar, File aspectJar, int recorderPort) {
-		this.jar = jar;
-		this.aspectJar = aspectJar;
-		this.recorderPort = recorderPort;
-	}
-	
+public class JPBLauncher implements Launcher {
+		
 	@Override
-	public void run() {
+	public void launch(LaunchConfiguration launchConfig) {
+		
 		String main = "";
 		try {
-			JarInputStream jarStream = new JarInputStream(new FileInputStream(jar));
+			JarInputStream jarStream = new JarInputStream(new FileInputStream(launchConfig.getJARFile()));
+			
 			main = jarStream.getManifest().getMainAttributes().getValue("Main-Class");
 			jarStream.close();
 		} catch (IOException ex) {
@@ -32,26 +24,17 @@ public class JPBLauncher implements AspectJLauncher {
 			throw new RuntimeException("Could not find main class in jar.");
 		}
 		
-		String cp = System.getProperty("java.class.path");
-
-		// Find weaver agent.
-		String weaver = "";
-		for(String path : cp.split(File.pathSeparator))
-			if(path.contains("aspectjweaver")) weaver = path;
-		
-		if(weaver.length() == 0) throw new RuntimeException("Can't find AspectJ weaver on cp.");
-
-		
 		JavaProcessBuilder jvm = new JavaProcessBuilder();
 		
+		String cp = System.getProperty("java.class.path");
 		for(String path : cp.split(File.pathSeparator)) jvm.classpath(path);
+		for(String path : launchConfig.additionalClassPaths()) jvm.classpath(path);
+	
+		jvm.jvmArg(launchConfig.getJVMArguments());
+		jvm.arg(launchConfig.getProgramArguments());
 				
-		jvm.classpath(jar)
-				.classpath(aspectJar)
-				.systemProperty("org.flightofstairs.honours.capture.port", recorderPort + "")
-				.jvmArg("-javaagent:" + weaver)
-				.mainClass(main);
-		
+		jvm.classpath(launchConfig.getJARFile()).mainClass(main);
+				
 		try {
 			Process p = jvm.launch(System.out, System.err);
 			
