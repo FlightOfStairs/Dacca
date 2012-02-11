@@ -2,9 +2,6 @@ package org.flightofstairs.honours.capture.agent;
 
 import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
-import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
-import org.flightofstairs.honours.common.Call;
-
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -14,6 +11,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
+import org.flightofstairs.honours.common.Call;
 
 public enum Tracer {
 	INSTANCE;
@@ -28,8 +27,6 @@ public enum Tracer {
 	private final RemoteRecorder recorder;
 	
 	private Tracer() throws ExceptionInInitializerError {		
-		System.exit(0);
-		
 		try {
 			int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
 			System.out.println(port);
