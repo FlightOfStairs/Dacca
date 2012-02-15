@@ -2,11 +2,12 @@
 package org.flightofstairs.honours.app.dialogs;
 
 import java.io.File;
-import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.flightofstairs.honours.app.panels.PackageChooser;
+import org.flightofstairs.honours.capture.launchers.BaseLaunchConfiguration;
+import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 
 public class LaunchDialog extends javax.swing.JDialog {
 
@@ -134,7 +135,7 @@ public class LaunchDialog extends javax.swing.JDialog {
 			return;
 		}
 		
-		if(getSelectedPackages().size() == 0) {
+		if(((PackageChooser) packageChooser).getSelectedPackages().size() == 0) {
 			JOptionPane.showMessageDialog(this, "Doesn't make much sense to record without watching any classes...", "Error", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
@@ -168,20 +169,14 @@ public class LaunchDialog extends javax.swing.JDialog {
 		return launched;
 	}
 	
-	public File getJarFile() {
-		return new File(jarPath.getText());
-	}
-	
-	public String getJVMArgs() {
-		return jvmArgumentsField.getText();
-	}
-	
-	public String getProgramArgs() {
-		return programArgumentsField.getText();
-	}
-	
-	public List<String> getSelectedPackages() {
-		return ((PackageChooser) packageChooser).getSelectedPackages();
+	public LaunchConfiguration getLaunchConfiguration() {
+		if(!launched()) throw new IllegalStateException("Launch configuration useless without "); 
+		
+		return new BaseLaunchConfiguration(
+				new File(jarPath.getText()),
+				jvmArgumentsField.getText(),
+				programArgumentsField.getText(),
+				((PackageChooser) packageChooser).getSelectedPackages());
 	}
 	
 	/**

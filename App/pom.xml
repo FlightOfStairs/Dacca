@@ -108,7 +108,8 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <groupId>org.flightofstairs.honours</groupId>
       <artifactId>Capture</artifactId>
       <version>1.0-SNAPSHOT</version>
-    </dependency>
+	    <type>jar</type>
+	</dependency>
 	<dependency>
       <groupId>org.flightofstairs.honours</groupId>
       <artifactId>Analysis</artifactId>
