@@ -71,10 +71,6 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 		
 		viewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
-				
-		viewer.getRenderContext().setVertexFillPaintTransformer({
-				new Color(100, 255, 100, (int) (255 * scorer.rank()[it])) 
-			} as Transformer)
 		
 		viewer.getRenderContext().setVertexDrawPaintTransformer({
 				return selectionModel.isSelected(it) ? Color.yellow : Color.black;
@@ -115,6 +111,11 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	
 	private void refreshTransformers() {
 		viewer.getRenderContext().setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
+		
+		viewer.getRenderContext().setVertexFillPaintTransformer({
+				def greenNess = (int) (255 * scorer.rank()[it])
+				new Color(100, 255, 100, greenNess)
+			} as Transformer)
 		
 		def hidePredicate = new HidePredicate(callGraph, scorer, viewer.getRenderContext());
 		
