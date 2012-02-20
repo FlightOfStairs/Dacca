@@ -37,6 +37,21 @@ class RankDecoratorTest extends GroovyTestCase {
 			
 			assertEquals(scaledClasses, unScaledClasses);
 		}
+		
+		// rank itself
+		scorers(orrery).each {
+			def unScaled = it.rank();
+			def scaled = (new RankDecorator(new RankDecorator(it))).rank();
+			
+			def unScaledClasses = unScaled.keySet().sort ({ a, b ->
+					Math.abs(unScaled[a] - unScaled[b]) > 0.000001 ? unScaled[a] <=> unScaled[b] : a <=> b
+				})
+			def scaledClasses = scaled.keySet().sort ({ a, b ->
+					Math.abs(scaled[a] - scaled[b]) > 0.000001 ? scaled[a] <=> scaled[b] : a <=> b
+				})
+			
+			assertEquals(scaledClasses, unScaledClasses);
+		}
 	}
 	
 	void testCacheDecorator() {
@@ -45,7 +60,17 @@ class RankDecoratorTest extends GroovyTestCase {
 			
 			def cached = new CacheDecorator(orrery, it);
 			
+			def start = System.nanoTime();
 			assertEquals(results, cached.rank());
+			
+			def firstTime = System.nanoTime() - start;
+			
+			start = System.nanoTime();
+			assertEquals(results, cached.rank());
+			
+			def againTime = System.nanoTime() - start;
+			
+			assertTrue(againTime < firstTime);
 		}
 	}
 	
@@ -67,7 +92,7 @@ class RankDecoratorTest extends GroovyTestCase {
 	}
 	
 	private static List<ClassScorer> scorers(CallGraph callGraph) {
-		return [new Connectivity(callGraph), new HITSWeighted(callGraph), new HITSScorer(callGraph), new MethodConnectivity(callGraph)];
+		return ScorerFactory.scorers.values().collect { it(callGraph) };
 	}
 }
 
