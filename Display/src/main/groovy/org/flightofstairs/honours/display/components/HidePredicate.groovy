@@ -1,4 +1,4 @@
-package org.flightofstairs.honours.display
+package org.flightofstairs.honours.display.components
 
 import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.Layer;
@@ -23,7 +23,7 @@ class HidePredicate implements Predicate {
 	private final RenderContext context;
 	
 	public HidePredicate(CallGraph callGraph, ClassScorer scorer, RenderContext context,
-				double offset = 0.0, double maxScoreNeeded = 0.9, double zoomForAll = 5) {
+							double offset = 0.0, double maxScoreNeeded = 0.9, double zoomForAll = 5) {
 		this.callGraph = callGraph;
 		this.scorer = scorer;
 		this.context = context;
@@ -41,7 +41,7 @@ class HidePredicate implements Predicate {
 		
 		def vertex = input instanceof Context ? input.element : input;
 		
-		return scorer.rank(callGraph)[vertex] + offset > minScore 
+		return scorer.rank()[vertex] + offset > minScore 
 	}
 }
 

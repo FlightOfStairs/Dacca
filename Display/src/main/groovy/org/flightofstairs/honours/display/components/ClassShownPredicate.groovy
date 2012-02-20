@@ -1,4 +1,4 @@
-package org.flightofstairs.honours.display
+package org.flightofstairs.honours.display.components
 
 import org.apache.commons.collections15.Predicate;
 

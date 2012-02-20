@@ -29,9 +29,9 @@ class GraphPanelTest extends GroovyTestCase {
 //	}
 	
 	void testSetScorer() {
-		def gp = new GraphPanel(orrery);
+		def gp = new GraphPanel(orrery, new HITSScorer(orrery));
 		gp.setPreferredSize(new Dimension(800, 800));
-		gp.setScorer(new HITSScorer());
+		gp.initGraphPanel();
 		present(gp);
 	}
 	

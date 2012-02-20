@@ -1,9 +1,10 @@
-package org.flightofstairs.honours.display
+package org.flightofstairs.honours.display.components
 
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.geom.RoundRectangle2D;
 
+import org.flightofstairs.honours.display.selection.SelectedClassModel;
 import edu.uci.ics.jung.visualization.RenderContext;
 
 import org.apache.commons.collections15.Transformer
@@ -15,6 +16,7 @@ class TextFitShape<V> implements Transformer {
 	public static final int MARGIN = 2;
 	
 	private final RenderContext context;
+	private final SelectedClassModel selectionModel;
 	
 	@Requires({ context != null })
 	public TextFitShape(RenderContext context) {
