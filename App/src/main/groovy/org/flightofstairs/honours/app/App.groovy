@@ -21,8 +21,7 @@ public class App {
 				
 		def graph = recorder.getResults();
 				
-		def gp = new GraphPanel(graph);
-		gp.setScorer(new HITSScorer());
+		def gp = new GraphPanel(graph, new HITSScorer(graph));
 		
 		def frame = new JFrame("Graph Stuff");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -40,6 +40,14 @@ class PackageChooser extends CheckboxTree {
 		expandRow(0);
 	}
 	
+	@Requires({ classes != null && rootText != null })
+	public void setClassList(String rootText, List<String> classes) {
+		model.setRoot(new DefaultMutableTreeNode(rootText))
+		setPackageList(packagesUsed(classes));
+		
+		expandRow(0);
+	}
+	
 	@Requires({ packages != null })
 	private setPackageList(List<String> packages) {
 		

@@ -16,6 +16,8 @@ public class LaunchDialog extends javax.swing.JDialog {
 	public LaunchDialog(java.awt.Frame parent, boolean modal) {
 		super(parent, modal);
 		initComponents();
+		
+		setLocationRelativeTo(parent);
 	}
 
 	@SuppressWarnings("unchecked")
