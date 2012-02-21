@@ -41,13 +41,12 @@ public class MainForm extends javax.swing.JFrame {
         mergeMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
 
         tabPanel.setMinimumSize(new java.awt.Dimension(1307, 824));
         tabPanel.setPreferredSize(new java.awt.Dimension(1307, 824));
 
-        jPanel1.setMinimumSize(new java.awt.Dimension(1307, 824));
-        jPanel1.setPreferredSize(new java.awt.Dimension(919, 624));
+        jPanel1.setMinimumSize(new java.awt.Dimension(1319, 824));
+        jPanel1.setPreferredSize(new java.awt.Dimension(1319, 824));
         jPanel1.setLayout(new java.awt.BorderLayout());
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
