@@ -17,7 +17,16 @@ public class MethodConnectivity<V extends Serializable> implements ClassScorer {
 		Graph<V, ?> graph = callGraph.getGraph();
 		
 		callGraph.classes().each {
-			results[it] = graph.getOutEdges(it).size() + graph.getInEdges(it).size();
+			int total = 0
+			graph.getOutEdges(it).each { e ->
+				total += e.callVariety()
+			}
+			
+			graph.getInEdges(it).each { e ->
+				total += e.callVariety()
+			}
+			
+			results[it] = total;
 		}
 		
 		return results;
