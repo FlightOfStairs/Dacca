@@ -32,6 +32,7 @@ import org.flightofstairs.honours.analysis.ClassScorer;
 import org.flightofstairs.honours.analysis.CacheDecorator;
 import org.flightofstairs.honours.analysis.RankDecorator;
 import org.flightofstairs.honours.display.selection.SelectedClassModel;
+import org.flightofstairs.honours.display.selection.SelectionChangeListener;
 
 import java.util.logging.Logger;
 
@@ -52,12 +53,14 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	
 	private ClassScorer scorer;
 	
-	private final SelectedClassModel selectionModel = new SelectedClassModel();
+	public final SelectedClassModel selectionModel = new SelectedClassModel();
 	
 	public GraphPanel(CallGraph<V> callGraph, ClassScorer scorer) {
+		super();
+		
 		this.callGraph = callGraph;
 		
-		graphLayout = new FRLayout(callGraph.getGraph());
+		graphLayout = new FRLayout2(callGraph.getGraph());
 		
 		graphLayout.setSize(new Dimension(DEFAULT_X, DEFAULT_Y));
 		
@@ -98,6 +101,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		revalidate();
 		
 		callGraph.addListener({ redraw() } as CallGraphListener);
+		selectionModel.addListener({ redraw() } as SelectionChangeListener)
 	}
 	
 	@Requires({ scorer != null })
