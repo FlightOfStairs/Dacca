@@ -3,30 +3,38 @@
  */
 package org.flightofstairs.honours.app.panels;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.io.File;
 import java.rmi.RemoteException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 import org.flightofstairs.honours.analysis.ClassScorer;
+import org.flightofstairs.honours.analysis.RankDecorator;
+import org.flightofstairs.honours.analysis.CacheDecorator;
 import org.flightofstairs.honours.analysis.ScorerFactory;
+import org.flightofstairs.honours.app.table.ClassTableModel;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
 import org.flightofstairs.honours.capture.recorder.Recorder;
 import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.display.GraphPanel;
-import org.flightofstairs.honours.app.table.ClassTableModel;
 
 public class SessionPanel extends javax.swing.JPanel {
 	
 	private File saveLocation = null;
 	
 	private final CallGraph callGraph;
-	
+		
 	private final DefaultComboBoxModel<String> scorerSelectModel = new DefaultComboBoxModel<>();
 	
 	// This should never be null. It would be final if it could.
 	private ClassTableModel tableModel;
+	private ClassScorer scorer;
 
 	public SessionPanel(final LaunchConfiguration launchConfiguration) throws RemoteException {
 		
@@ -84,6 +92,8 @@ public class SessionPanel extends javax.swing.JPanel {
 		for(String s : ScorerFactory.scorers.keySet()) scorerSelectModel.addElement(s);
 		
 		tableModel = new ClassTableModel(callGraph, getScorer());
+		
+		this.scorer = new CacheDecorator(callGraph, new RankDecorator(getScorer()));
 	}
 	/**
 	 * This method is called from within the constructor to initialize the form.
@@ -154,9 +164,12 @@ public class SessionPanel extends javax.swing.JPanel {
 
         jLabel1.setText("Classes");
 
+        classList.setAutoCreateRowSorter(true);
         classList.setModel(tableModel);
         classList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         jScrollPane1.setViewportView(classList);
+        classList.getColumnModel().getColumn(0).setCellRenderer(new ColourRenderer(this));
+        classList.getColumnModel().getColumn(1).setCellRenderer(new ColourRenderer(this));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -225,11 +238,13 @@ public class SessionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void scorerSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scorerSelectorActionPerformed
-		ClassScorer scorer = getScorer();
+		ClassScorer rawScorer = getScorer();
 		
-		getDisplayPanel().setScorer(scorer);
+		this.scorer = new CacheDecorator(callGraph, new RankDecorator(rawScorer));
 		
-		tableModel.setScorer(scorer);
+		getDisplayPanel().setScorer(rawScorer);
+		
+		tableModel.setScorer(rawScorer);
 	}//GEN-LAST:event_scorerSelectorActionPerformed
 
 	
@@ -250,4 +265,29 @@ public class SessionPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox scorerSelector;
     // End of variables declaration//GEN-END:variables
 
+	
+	public class ColourRenderer extends JLabel implements TableCellRenderer {
+		private final SessionPanel panel;
+		
+		public ColourRenderer(SessionPanel panel) {
+			this.panel = panel;
+			
+			setOpaque(true);
+		}
+ 
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value,
+				boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
+
+			int greenness = (int) (255 * (double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0)));
+			
+			setBackground(new Color(255 - greenness, 255, 255 - greenness));
+			
+			setText(value.toString());
+
+			setToolTipText((String)value.toString());
+
+			return this;
+		}
+	}
 }

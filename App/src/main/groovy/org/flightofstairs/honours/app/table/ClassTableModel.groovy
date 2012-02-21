@@ -98,12 +98,15 @@ public class ClassTableModel extends AbstractTableModel {
 		return column == 0 ? "Class" : "Score";
 	}
 	
+	public Class<?> getColumnClass(int column) {
+		return column == 0 ? String.class : Double.class;
+	}
+	
 	@Requires({ column <= 1; row < getRowCount() })
 	public Object getValueAt(int row, int column) {
 		if(sorted == null || scores == null) updateClassData();
 		
 		return column == 0 ? sorted[row] : scores[sorted[row]];
 	}
-	
 }
 
