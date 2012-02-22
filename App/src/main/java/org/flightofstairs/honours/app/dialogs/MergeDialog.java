@@ -9,7 +9,7 @@ import org.flightofstairs.honours.common.CallGraph;
 
 public class MergeDialog extends javax.swing.JDialog {
 	
-	private final DefaultListModel<File> listModel = new DefaultListModel<>();
+	private final DefaultListModel listModel = new DefaultListModel();
 
 	private File mergedFile = null;
 	
@@ -178,10 +178,10 @@ public class MergeDialog extends javax.swing.JDialog {
 		int ret = fileChooser.showSaveDialog(this);
 		if(ret != JFileChooser.APPROVE_OPTION) return;
 		
-		CallGraph<String> target = new CallGraph<>();
+		CallGraph<String> target = new CallGraph<String>();
 		
 		for(int i = 0; i < listModel.size(); i++) {
-			target.merge(CallGraph.open(listModel.get(i)));
+			target.merge(CallGraph.open((File) listModel.get(i)));
 		}
 		
 		target.save(fileChooser.getSelectedFile());

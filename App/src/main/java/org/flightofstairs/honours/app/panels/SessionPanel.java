@@ -30,7 +30,7 @@ public class SessionPanel extends javax.swing.JPanel {
 	
 	private final CallGraph callGraph;
 		
-	private final DefaultComboBoxModel<String> scorerSelectModel = new DefaultComboBoxModel<>();
+	private final DefaultComboBoxModel scorerSelectModel = new DefaultComboBoxModel();
 	
 	// This should never be null. It would be final if it could.
 	private ClassTableModel tableModel;
@@ -82,7 +82,7 @@ public class SessionPanel extends javax.swing.JPanel {
 		String scorerString = null;
 		
 		if(scorerSelector == null) // still in initialization
-			scorerString = scorerSelectModel.getElementAt(0);
+			scorerString = (String) scorerSelectModel.getElementAt(0);
 		else
 			scorerString = (String) scorerSelector.getSelectedItem();
 		
@@ -279,7 +279,7 @@ public class SessionPanel extends javax.swing.JPanel {
 		public Component getTableCellRendererComponent(JTable table, Object value,
 				boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
 
-			int greenness = (int) (255 * (double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0)));
+			int greenness = (int) (255 * (Double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0)));
 			
 			setBackground(new Color(255 - greenness, 255, 255 - greenness));
 			
