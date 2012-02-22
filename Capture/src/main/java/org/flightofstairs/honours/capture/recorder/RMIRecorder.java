@@ -2,10 +2,13 @@ package org.flightofstairs.honours.capture.recorder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +29,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	
 	private boolean ended = true;
 	
-	public static int port;
+	public int port;
 	
 	private final CallGraph<String> graph = new CallGraph<String>();
 	
@@ -43,7 +46,15 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			
 			port = findFreePort();
 			
-			Registry registry = LocateRegistry.createRegistry(port);
+			System.setSecurityManager(new SecurityManager());
+			
+			Registry registry = LocateRegistry.createRegistry(port, RMISocketFactory.getDefaultSocketFactory(), new RMIServerSocketFactory() {
+				@Override
+				public ServerSocket createServerSocket(int arg0) throws IOException {
+					return new ServerSocket(arg0, 0, InetAddress.getLocalHost());
+				}
+			});
+			
 			registry.rebind("Recorder", this);
 			
 			AspectBuilder builder = new AspectBuilder(launchConfig.packages());
