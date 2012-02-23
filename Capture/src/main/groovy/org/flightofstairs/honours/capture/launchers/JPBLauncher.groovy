@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jlibs.core.lang.JavaProcessBuilder;
 
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
+import org.flightofstairs.honours.capture.recorder.UNCCompatibleJavaProcessBuilder;
 
 public class JPBLauncher implements Launcher {
 		
@@ -26,7 +26,7 @@ public class JPBLauncher implements Launcher {
 			throw new RuntimeException("Could not find main class in jar.");
 		}
 		
-		JavaProcessBuilder jvm = new JavaProcessBuilder();
+		UNCCompatibleJavaProcessBuilder jvm = new UNCCompatibleJavaProcessBuilder();
 
 		String cp = System.getProperty("java.class.path");
 
@@ -37,6 +37,8 @@ public class JPBLauncher implements Launcher {
 		for(String arg : launchConfig.getProgramArguments()) jvm.arg(arg);
 		
 		jvm.classpath(launchConfig.getJARFile()).mainClass(main);
+
+		jvm.command().each { println it }
 		
 		try {
 			Process p = jvm.launch(System.out, System.err);

@@ -45,12 +45,9 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		try {
 			
 			port = findFreePort();
-			
-			System.setSecurityManager(new SecurityManager());
-			
+						
 			Registry registry = LocateRegistry.createRegistry(port, RMISocketFactory.getDefaultSocketFactory(), new RMIServerSocketFactory() {
-				@Override
-				public ServerSocket createServerSocket(int arg0) throws IOException {
+				@Override public ServerSocket createServerSocket(int arg0) throws IOException {
 					return new ServerSocket(arg0, 0, InetAddress.getLocalHost());
 				}
 			});
@@ -59,7 +56,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			
 			AspectBuilder builder = new AspectBuilder(launchConfig.packages());
 			File aspectClass = builder.compileAspect();
-			
+						
 			LaunchConfiguration rmiConfig = new RMILaunchConfig(launchConfig, port, aspectClass.getAbsolutePath());
 			
 			launcher.launch(rmiConfig);
