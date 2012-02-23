@@ -8,9 +8,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
   
   <parent>
     <groupId>org.flightofstairs.dacca</groupId>
-    <artifactId>Dacca</artifactId>
+    <artifactId>Parent</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../Parent</relativePath>
   </parent>
   
   <dependencies>
