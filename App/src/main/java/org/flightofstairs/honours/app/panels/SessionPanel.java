@@ -9,14 +9,14 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JTable;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellRenderer;
+import org.flightofstairs.honours.analysis.CacheDecorator;
 import org.flightofstairs.honours.analysis.ClassScorer;
 import org.flightofstairs.honours.analysis.RankDecorator;
-import org.flightofstairs.honours.analysis.CacheDecorator;
 import org.flightofstairs.honours.analysis.ScorerFactory;
+import org.flightofstairs.honours.app.dialogs.OverrideFileChooser;
 import org.flightofstairs.honours.app.table.ClassTableModel;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
@@ -36,16 +36,16 @@ public class SessionPanel extends javax.swing.JPanel {
 	private ClassTableModel tableModel;
 	private ClassScorer scorer;
 
-	public SessionPanel(final LaunchConfiguration launchConfiguration) throws RemoteException {
+	public SessionPanel(final LaunchConfiguration launchConfig) throws RemoteException {
 		
-		final Recorder recorder = new RMIRecorder(launchConfiguration);
+		final Recorder recorder = new RMIRecorder(launchConfig);
 		
 		this.callGraph = recorder.getResults();
 		
 		otherInit();		
 		initComponents();
 		
-		((PackageChooser) packageChooser).setJarFile(launchConfiguration.getJARFile());
+		((PackageChooser) packageChooser).setJarFile(launchConfig.getJARFile());
 		
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		
@@ -70,16 +70,30 @@ public class SessionPanel extends javax.swing.JPanel {
 	}
 	
 	public void closing() {
-		throw new UnsupportedOperationException("Not yet implemented");
+		int saveDialogResult = JOptionPane.showConfirmDialog(this, "Save graph before closing?", "Save graph?",JOptionPane.YES_NO_OPTION);
+		
+		if(saveDialogResult == JOptionPane.YES_OPTION) save();
 	}
 
 	public void save() {
-		throw new UnsupportedOperationException("Not yet implemented");
+		if(saveLocation == null) {
+			final JFileChooser fileChooser = new OverrideFileChooser();
+
+			fileChooser.setDialogTitle("Save callgraph");
+			fileChooser.setFileFilter(new FileNameExtensionFilter("Callgraph files", "callgraph"));
+
+			final int ret = fileChooser.showSaveDialog(this);
+			if(ret != JFileChooser.APPROVE_OPTION) return;
+			
+			saveLocation = fileChooser.getSelectedFile();
+		}
+		
+		callGraph.save(saveLocation);
 	}
 
 	
 	private ClassScorer getScorer() {
-		String scorerString = null;
+		String scorerString;
 		
 		if(scorerSelector == null) // still in initialization
 			scorerString = (String) scorerSelectModel.getElementAt(0);
@@ -238,7 +252,7 @@ public class SessionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private void scorerSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scorerSelectorActionPerformed
-		ClassScorer rawScorer = getScorer();
+		final ClassScorer rawScorer = getScorer();
 		
 		this.scorer = new CacheDecorator(callGraph, new RankDecorator(rawScorer));
 		
@@ -277,15 +291,19 @@ public class SessionPanel extends javax.swing.JPanel {
  
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value,
-				boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
-
-			int greenness = (int) (255 * (Double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0)));
-			
-			setBackground(new Color(255 - greenness, 255, 255 - greenness));
-			
+			boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
 			setText(value.toString());
 
 			setToolTipText((String)value.toString());
+			final Double score = (Double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0));
+			
+			if(score != null) {
+			
+				int greenness = (int) (255 * score);
+
+				setBackground(new Color(255 - greenness, 255, 255 - greenness));
+			
+			}
 
 			return this;
 		}

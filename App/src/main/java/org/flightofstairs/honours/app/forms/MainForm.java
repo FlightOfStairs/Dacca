@@ -41,6 +41,7 @@ public class MainForm extends javax.swing.JFrame {
         mergeMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Dacca");
 
         tabPanel.setMinimumSize(new java.awt.Dimension(1307, 824));
         tabPanel.setPreferredSize(new java.awt.Dimension(1307, 824));
@@ -139,10 +140,10 @@ public class MainForm extends javax.swing.JFrame {
 		
 		if(launchDialog.launched()) {
 			try {
-				LaunchConfiguration launchConfiguration = launchDialog.getLaunchConfiguration();
+				final LaunchConfiguration launchConfig = launchDialog.getLaunchConfiguration();
 				
-				tabPanel.addTab(launchConfiguration.getJARFile().getName(),
-									new SessionPanel(launchConfiguration));
+				tabPanel.addTab(launchConfig.getJARFile().getName(),
+									new SessionPanel(launchConfig));
 				
 				tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
 				
@@ -193,8 +194,8 @@ public class MainForm extends javax.swing.JFrame {
 	}//GEN-LAST:event_openMenuItemActionPerformed
 
 	private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
-		if(tabPanel.getTabComponentAt(tabPanel.getSelectedIndex()) instanceof SessionPanel)
-			((SessionPanel) tabPanel.getTabComponentAt(tabPanel.getSelectedIndex())).save();
+		if(tabPanel.getSelectedComponent() instanceof SessionPanel)
+			((SessionPanel) tabPanel.getSelectedComponent()).save();
 	}//GEN-LAST:event_saveMenuItemActionPerformed
 
 	/**
@@ -230,8 +231,8 @@ public class MainForm extends javax.swing.JFrame {
 			
 			if(getTabCount() == 1) return false;
 			
-			if(getTabComponentAt(tab) instanceof SessionPanel)
-				((SessionPanel) getTabComponentAt(tab)).closing();
+			if(getComponentAt(tab) instanceof SessionPanel)
+				((SessionPanel) getComponentAt(tab)).closing();
 			
 			return true;
 		}
