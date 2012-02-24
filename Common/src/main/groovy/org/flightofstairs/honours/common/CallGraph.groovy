@@ -1,5 +1,6 @@
 package org.flightofstairs.honours.common;
 
+import java.util.concurrent.locks.ReentrantLock;
 
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph
 import edu.uci.ics.jung.graph.Graph
@@ -11,7 +12,7 @@ import org.gcontracts.annotations.*
 
 public class CallGraph<V extends Serializable> implements Serializable {
 	
-	private final graphLock = new Serializable() {}
+	private final graphLock = new ReentrantLock();
 	private final listenersLock = new Serializable() {}
 	
 	public static final int UPDATE_PERIOD = 1000;
@@ -73,6 +74,12 @@ public class CallGraph<V extends Serializable> implements Serializable {
 		return results
 	}
 	
+	@Requires({ user != null })
+	@Synchronized("graphLock")
+	public void runExclusively(ExclusiveGraphUser user) {
+		user.run(this);
+	}
+	
 	@Ensures({ result != null })
 	public Graph<V, ClassRelation> getGraph() {
 		if(unmodifiableGraph == null)
@@ -114,10 +121,14 @@ public class CallGraph<V extends Serializable> implements Serializable {
 		// Assume that timer won't be running
 		Timer timer = new Timer();
 		timer.scheduleAtFixedRate({
-			if(lastUpdate >= lastUpdateTest) {
-				for(CallGraphListener l in listeners) l.callGraphChange(this);
-			}
-			lastUpdateTest = System.currentTimeMillis();
+				if(graphLock.tryLock()) {
+					try {
+						if(lastUpdate >= lastUpdateTest) {
+							for(CallGraphListener l in listeners) l.callGraphChange(this);
+						}
+						lastUpdateTest = System.currentTimeMillis();
+					} finally { graphLock.unlock(); }
+				}
 		} as TimerTask, 0, UPDATE_PERIOD);
 	}
 	
