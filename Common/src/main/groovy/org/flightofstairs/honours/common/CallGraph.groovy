@@ -12,7 +12,7 @@ import org.gcontracts.annotations.*
 
 public class CallGraph<V extends Serializable> implements Serializable {
 	
-	private final graphLock = new ReentrantLock();
+	private final ReentrantLock graphLock = new ReentrantLock();
 	private final listenersLock = new Serializable() {}
 	
 	public static final int UPDATE_PERIOD = 1000;
@@ -127,7 +127,10 @@ public class CallGraph<V extends Serializable> implements Serializable {
 							for(CallGraphListener l in listeners) l.callGraphChange(this);
 						}
 						lastUpdateTest = System.currentTimeMillis();
-					} finally { graphLock.unlock(); }
+						
+					}
+					catch(all) { }
+					finally { graphLock.unlock(); }
 				}
 		} as TimerTask, 0, UPDATE_PERIOD);
 	}
