@@ -1,6 +1,7 @@
 package org.flightofstairs.honours.analysis
 
 import org.flightofstairs.honours.common.CallGraph;
+import org.flightofstairs.honours.common.ExclusiveGraphUser;
 import org.flightofstairs.honours.common.CallGraphListener;
 
 import groovy.transform.Synchronized
@@ -24,11 +25,17 @@ public class CacheDecorator<V extends Serializable> implements ClassScorer {
 		callGraph.addListener({ synchronized(cacheLock) { cache = null } } as CallGraphListener)
 	}
 	
-	@Requires({ this.callGraph == callGraph })
-	@Ensures({ result != null })
 	@Synchronized("cacheLock")
 	public Map<V, Double> rank() {
-		if(cache == null) cache = delegate.rank();
+		if(cache != null) return cache;
+		
+		if(! delegate instanceof CacheDecorator) {
+			callGraph.runExclusively({
+				cache = delegate.rank();
+			} as ExclusiveGraphUser);
+		} else {
+			cache = delegate.rank();
+		}
 		return cache;
 	}
 }

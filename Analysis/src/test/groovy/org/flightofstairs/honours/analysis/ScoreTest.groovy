@@ -2,11 +2,11 @@ package org.flightofstairs.honours.analysis
 
 import org.flightofstairs.honours.common.CallGraph;
 
-class RankDecoratorTest extends GroovyTestCase {
+class ScoreTest extends GroovyTestCase {
 	private CallGraph orrery;
 	
 	private static final List<String> top = [
-		"StandardDrawingView", "DrawApplication", "PlanetFigure", "OrreryApp"
+		"StandardDrawingView", "StandardDrawing", "DrawApplication", "PlanetFigure", "OrreryApp", "AtmosphereDecorator"
 	]
 	
 	void setUp() {
@@ -84,7 +84,7 @@ class RankDecoratorTest extends GroovyTestCase {
 			assertTrue(top.contains(parts[parts.size() - 1]))
 			
 			scores.remove(best);
-			
+						
 			best = scores.keySet().max { scores[it] }
 			parts = best.tokenize('.')
 			assertTrue(top.contains(parts[parts.size() - 1]))
