@@ -41,7 +41,9 @@ class HidePredicate implements Predicate {
 		
 		def vertex = input instanceof Context ? input.element : input;
 		
-		return scorer.rank()[vertex] + offset > minScore 
+		def score = scorer.rank()[vertex]
+		
+		return score == null ? true : score + offset > minScore 
 	}
 }
 

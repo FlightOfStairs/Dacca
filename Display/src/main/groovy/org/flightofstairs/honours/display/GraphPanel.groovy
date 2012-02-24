@@ -26,7 +26,10 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.Predicate;
 
+import java.awt.Graphics;
+
 import org.flightofstairs.honours.common.CallGraph;
+import org.flightofstairs.honours.common.ExclusiveGraphUser;
 import org.flightofstairs.honours.common.CallGraphListener;
 import org.flightofstairs.honours.analysis.ClassScorer;
 import org.flightofstairs.honours.analysis.CacheDecorator;
@@ -70,7 +73,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 
 		Layout staticLayout = new StaticLayout(callGraph.getGraph(), graphLayout);
 
-        viewer = new VisualizationViewer(staticLayout);
+        viewer = new SafeVisualizationViewer(callGraph, staticLayout);
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 		
 		viewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
@@ -78,6 +81,8 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		viewer.getRenderContext().setVertexDrawPaintTransformer({
 				return selectionModel.isSelected(it) ? Color.yellow : Color.black;
 		} as Transformer)
+	
+		viewer.setVertexToolTipTransformer({ it } as Transformer);
 				
 		viewer.setGraphMouse(new DefaultModalGraphMouse());
 		
@@ -117,8 +122,11 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		viewer.getRenderContext().setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
 		
 		viewer.getRenderContext().setVertexFillPaintTransformer({
-				def greenNess = (int) (255 * scorer.rank()[it])
-				new Color(100, 255, 100, greenNess)
+				try {
+					def greenNess = (int) (255 * scorer.rank()[it])
+					return new Color(100, 255, 100, greenNess)
+				} catch(all) { }
+				return Color.white
 			} as Transformer)
 		
 		def hidePredicate = new HidePredicate(callGraph, scorer, viewer.getRenderContext());
@@ -139,20 +147,26 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	}
 	
 	private void redraw() {
-		graphLayout.initialize();
+		callGraph.runExclusively({ graphLayout.initialize() } as ExclusiveGraphUser)
 		
 		Relaxer relaxer = new VisRunner((IterativeContext)graphLayout);
         relaxer.stop();
 		
 		relaxer.prerelax();
-        StaticLayout staticLayout = new StaticLayout(callGraph.getGraph(), graphLayout);
 		
-		LayoutTransition lt = new LayoutTransition(viewer, viewer.getGraphLayout(), staticLayout);
+		LayoutTransition lt;
 		
+		callGraph.runExclusively({
+			StaticLayout staticLayout = new StaticLayout(callGraph.getGraph(), graphLayout);
+			lt = new LayoutTransition(viewer, viewer.getGraphLayout(), staticLayout);
+		 } as ExclusiveGraphUser)
+	 
 		Animator animator = new Animator(lt);
 		animator.start();
 		
 		relaxer.resume();
 	}
+	
+
 }
 
