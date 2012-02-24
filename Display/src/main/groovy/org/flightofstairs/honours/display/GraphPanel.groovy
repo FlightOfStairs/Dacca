@@ -26,8 +26,6 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.Predicate;
 
-import java.awt.Graphics;
-
 import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.common.ExclusiveGraphUser;
 import org.flightofstairs.honours.common.CallGraphListener;
@@ -166,7 +164,5 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		
 		relaxer.resume();
 	}
-	
-
 }
 
