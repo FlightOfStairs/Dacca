@@ -6,6 +6,8 @@ import edu.uci.ics.jung.graph.DirectedSparseMultigraph
 import edu.uci.ics.jung.graph.Graph
 import edu.uci.ics.jung.graph.util.Graphs
 
+import org.slf4j.LoggerFactory;
+
 import groovy.transform.Synchronized
 
 import org.gcontracts.annotations.*
@@ -129,7 +131,9 @@ public class CallGraph<V extends Serializable> implements Serializable {
 						lastUpdateTest = System.currentTimeMillis();
 						
 					}
-					catch(all) { }
+					catch(all) {
+						LoggerFactory.getLogger(CallGraph.class).warning("A callgraph listener threw an exception.", all);
+					}
 					finally { graphLock.unlock(); }
 				}
 		} as TimerTask, 0, UPDATE_PERIOD);
