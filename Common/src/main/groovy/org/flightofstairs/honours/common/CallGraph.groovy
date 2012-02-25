@@ -132,7 +132,7 @@ public class CallGraph<V extends Serializable> implements Serializable {
 						
 					}
 					catch(all) {
-						LoggerFactory.getLogger(CallGraph.class).warning("A callgraph listener threw an exception.", all);
+						LoggerFactory.getLogger(CallGraph.class).warn("A callgraph listener threw an exception.", all);
 					}
 					finally { graphLock.unlock(); }
 				}
