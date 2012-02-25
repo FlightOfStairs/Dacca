@@ -12,14 +12,14 @@ import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.flightofstairs.honours.capture.Producer.AspectBuilder;
 import org.flightofstairs.honours.capture.launchers.JPBLauncher;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 import org.flightofstairs.honours.capture.launchers.Launcher;
 import org.flightofstairs.honours.common.Call;
 import org.flightofstairs.honours.common.CallGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RMIRecorder extends UnicastRemoteObject implements Recorder, RemoteRecorder {
 	
@@ -62,7 +62,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			launcher.launch(rmiConfig);
 			
 		} catch (IOException ex) {
-			Logger.getLogger(RMIRecorder.class.getName()).log(Level.SEVERE, null, ex);
+			LoggerFactory.getLogger(RMIRecorder.class).error("Problem preparing or launching traced application", ex);
 		}
 	}
 
@@ -106,14 +106,12 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		public List<String> getJVMArguments() {
 			List<String> args = new LinkedList<String>();
 			
-			String cp = System.getProperty("java.class.path");
-
-			// Find weaver agent.
-			String weaver = "";
-			for(String path : cp.split(File.pathSeparator))
-				if(path.contains("aspectjweaver")) weaver = path;
-
-			if(weaver.length() == 0) throw new RuntimeException("Can't find AspectJ weaver on cp.");
+			String weaver = org.aspectj.weaver.loadtime.Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+			
+			LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaver);
+			
+			if(weaver.length() == 0)
+				throw new RuntimeException("Can't find AspectJ weaver on cp.");
 			
 			args.add("-javaagent:" + weaver);
 			args.add("-Dorg.flightofstairs.honours.capture.port=" + port);
