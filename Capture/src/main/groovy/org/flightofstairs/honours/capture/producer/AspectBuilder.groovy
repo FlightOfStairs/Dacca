@@ -1,4 +1,4 @@
-package org.flightofstairs.honours.capture.Producer
+package org.flightofstairs.honours.capture.producer
 
 import org.aspectj.tools.ajc.Main;
 

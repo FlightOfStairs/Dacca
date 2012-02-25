@@ -7,6 +7,9 @@ import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
 import org.flightofstairs.honours.capture.recorder.UNCCompatibleJavaProcessBuilder;
 
@@ -38,7 +41,7 @@ public class JPBLauncher implements Launcher {
 		
 		jvm.classpath(launchConfig.getJARFile()).mainClass(main);
 
-		jvm.command().each { println it }
+		LoggerFactory.getLogger(JPBLauncher.class).info("Launching traced application: {}", jvm.command().join(" "));
 		
 		try {
 			Process p = jvm.launch(System.out, System.err);
