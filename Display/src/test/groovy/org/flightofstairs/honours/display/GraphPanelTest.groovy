@@ -24,19 +24,19 @@ class GraphPanelTest extends GroovyTestCase {
 		orrery = CallGraph.open(file);
 	}
 	
-	void testDummy() {
-		new GraphPanel(orrery, new HITSScorer(orrery))
+	void testHiddenSelection() {
+		def gp = new GraphPanel(orrery, new HITSScorer(orrery))
 		// this stops GroovyTestCase complaining without having to display dialog during build.
+		
+		gp.initGraphPanel();
+		gp.selectionModel.setSelection("orrery.PlanetFigure");
 	}
 	
-	void dont_testStatic() {
-		present(new GraphPanel(orrery, new HITSScorer(orrery)));
-	}
-	
-	void dont_testSetScorer() {
+	void dont_testDisplay() {
 		def gp = new GraphPanel(orrery, new HITSScorer(orrery));
 		gp.setPreferredSize(new Dimension(800, 800));
 		gp.initGraphPanel();
+		gp.selectionModel.setSelection("orrery.PlanetFigure");
 		present(gp);
 	}
 	

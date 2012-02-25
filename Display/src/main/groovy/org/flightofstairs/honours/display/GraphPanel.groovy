@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.Color;
 import javax.swing.JPanel;
+import java.awt.BasicStroke;
 
 import org.flightofstairs.honours.display.components.*;
 
@@ -22,6 +23,7 @@ import edu.uci.ics.jung.algorithms.layout.util.VisRunner;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
+import edu.uci.ics.jung.visualization.RenderContext;
 
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.Predicate;
@@ -46,6 +48,13 @@ import org.gcontracts.annotations.*
 public class GraphPanel<V extends Serializable> extends JPanel {
 	public static final int DEFAULT_X = 800;
 	public static final int DEFAULT_Y = 800;
+	
+	public static final Color SELECTED_EDGE_COLOUR = Color.red;
+	public static final Color NEAR_EDGE_COLOUR = Color.blue;
+	public static final Color UNSELECTED_EDGE_COLOUR = Color.black;
+	
+	public static final float SELECTED_EDGE_WIDTH = 2f;
+	public static final float NEAR_EDGE_WIDTH = 1.5f
 	
 	private final CallGraph<V> callGraph;
 	
@@ -74,16 +83,6 @@ public class GraphPanel<V extends Serializable> extends JPanel {
         viewer = new SafeVisualizationViewer(callGraph, staticLayout);
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
 		
-		viewer.getRenderContext().setEdgeShapeTransformer(new EdgeShape.Line());
-		
-		viewer.getRenderContext().setVertexDrawPaintTransformer({
-				return selectionModel.isSelected(it) ? Color.yellow : Color.black;
-		} as Transformer)
-	
-		viewer.setVertexToolTipTransformer({ it } as Transformer);
-				
-		viewer.setGraphMouse(new DefaultModalGraphMouse());
-		
 		setScorer(scorer);
 	}
 	
@@ -95,6 +94,26 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	}
 	
 	public void initGraphPanel() {
+		RenderContext context = viewer.getRenderContext();
+		
+		context.setEdgeShapeTransformer(new EdgeShape.Line());
+		
+		context.setVertexDrawPaintTransformer({
+				if(selectionModel.isSelected(it)) return SELECTED_EDGE_COLOUR;
+				if(isConnectedToSelected(it)) return NEAR_EDGE_COLOUR;
+				return UNSELECTED_EDGE_COLOUR;
+		} as Transformer)
+	
+		context.setVertexStrokeTransformer({
+				if(selectionModel.isSelected(it)) return new BasicStroke(SELECTED_EDGE_WIDTH);
+				if(isConnectedToSelected(it)) return new BasicStroke(NEAR_EDGE_WIDTH);
+				return new BasicStroke();
+			} as Transformer)
+	
+		viewer.setVertexToolTipTransformer({ it.toString() } as Transformer);
+				
+		viewer.setGraphMouse(new DefaultModalGraphMouse());
+		
 		setLayout(new BorderLayout());
 		
 		add(viewer, BorderLayout.CENTER);
@@ -117,9 +136,11 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	}
 	
 	private void refreshTransformers() {
-		viewer.getRenderContext().setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
+		RenderContext context = viewer.getRenderContext();
 		
-		viewer.getRenderContext().setVertexFillPaintTransformer({
+		context.setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
+		
+		context.setVertexFillPaintTransformer({
 				try {
 					def greenNess = (int) (255 * scorer.rank()[it])
 					return new Color(100, 255, 100, greenNess)
@@ -127,18 +148,18 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 				return Color.white
 			} as Transformer)
 		
-		def hidePredicate = new HidePredicate(callGraph, scorer, viewer.getRenderContext());
+		def hidePredicate = new HidePredicate(callGraph, scorer, context);
 		
-		viewer.getRenderContext().setVertexShapeTransformer(new HideTransformers(
+		context.setVertexShapeTransformer(new HideTransformers(
 				hidePredicate,
-				new TextFitShape(viewer.getRenderContext()),
+				new TextFitShape(context),
 				{ new Rectangle(-3, -3, 6, 6) } as Transformer
 				))
 			
-		viewer.getRenderContext().setVertexLabelTransformer(new HideTransformers(
-			hidePredicate,
-			NameTransformers.Short,
-			{ "" } as Transformer
+		context.setVertexLabelTransformer(new HideTransformers(
+				hidePredicate,
+				NameTransformers.Short,
+				{ "" } as Transformer
 			));
 
 		redraw();
@@ -163,6 +184,20 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		animator.start();
 		
 		relaxer.resume();
+	}
+	
+	private boolean isConnectedToSelected(String source) {
+		if(selectionModel.isSelected(source)) return true;
+		
+		def connections = [] as Set;
+		
+		callGraph.runExclusively({
+				def graph = callGraph.getGraph();
+				connections.addAll(graph.getPredecessors(source))
+				connections.addAll(graph.getSuccessors(source))				
+		} as ExclusiveGraphUser);
+	
+		return connections.any { selectionModel.isSelected(it) }
 	}
 }
 
