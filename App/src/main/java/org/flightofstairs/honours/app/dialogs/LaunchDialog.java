@@ -13,11 +13,18 @@ public class LaunchDialog extends javax.swing.JDialog {
 
 	private boolean launched = false;
 	
-	public LaunchDialog(java.awt.Frame parent, boolean modal) {
+	public LaunchDialog(final java.awt.Frame parent, final boolean modal) {
 		super(parent, modal);
 		initComponents();
 		
 		setLocationRelativeTo(parent);
+	}
+	
+	public LaunchDialog(final File file, final java.awt.Frame parent, final boolean modal) {
+		this(parent, modal);
+
+		jarPath.setText(file.getPath());
+		((PackageChooser) packageChooser).setJarFile(file);
 	}
 
 	@SuppressWarnings("unchecked")

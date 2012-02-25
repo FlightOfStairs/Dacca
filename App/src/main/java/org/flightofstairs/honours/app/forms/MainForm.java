@@ -1,10 +1,12 @@
 package org.flightofstairs.honours.app.forms;
 
+import java.io.File;
 import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import org.apache.commons.io.FilenameUtils;
 import org.flightofstairs.honours.app.dialogs.LaunchDialog;
 import org.flightofstairs.honours.app.dialogs.MergeDialog;
 import org.flightofstairs.honours.app.panels.SessionPanel;
@@ -138,19 +140,7 @@ public class MainForm extends javax.swing.JFrame {
 		
 		launchDialog.setVisible(true);
 		
-		if(launchDialog.launched()) {
-			try {
-				final LaunchConfiguration launchConfig = launchDialog.getLaunchConfiguration();
-				
-				tabPanel.addTab(launchConfig.getJARFile().getName(),
-									new SessionPanel(launchConfig));
-				
-				tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
-				
-			} catch (RemoteException ex) {
-				Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+		if(launchDialog.launched()) launch(launchDialog.getLaunchConfiguration());
 	}//GEN-LAST:event_newMenuItemActionPerformed
 
 	private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -187,10 +177,7 @@ public class MainForm extends javax.swing.JFrame {
 		int ret = fileChooser.showOpenDialog(this);
 		if(ret != JFileChooser.APPROVE_OPTION) return;
 		
-		tabPanel.addTab(fileChooser.getSelectedFile().getName(),
-							new SessionPanel(fileChooser.getSelectedFile()));
-		
-		tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
+		open(fileChooser.getSelectedFile());
 	}//GEN-LAST:event_openMenuItemActionPerformed
 
 	private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveMenuItemActionPerformed
@@ -198,17 +185,6 @@ public class MainForm extends javax.swing.JFrame {
 			((SessionPanel) tabPanel.getSelectedComponent()).save();
 	}//GEN-LAST:event_saveMenuItemActionPerformed
 
-	/**
-	 * @param args the command line arguments
-	 */
-	public static void main(String args[]) {
-		java.awt.EventQueue.invokeLater(new Runnable() {
-
-			public void run() {
-				new MainForm().setVisible(true);
-			}
-		});
-	}
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
@@ -225,6 +201,25 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JMenu toolMenu;
     // End of variables declaration//GEN-END:variables
 
+	public void launch(final LaunchConfiguration launchConfig) {
+		try {
+
+			tabPanel.addTab(launchConfig.getJARFile().getName(),
+								new SessionPanel(launchConfig));
+
+			tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
+
+		} catch (RemoteException ex) {
+			Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	public void open(File file) {
+		tabPanel.addTab(file.getName(), new SessionPanel(file));
+		
+		tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
+	}
+	
 	private class SessionTabbedPane extends ClosableTabbedPane {
 		@Override
 		public boolean tabAboutToClose(int tab) {
@@ -236,5 +231,31 @@ public class MainForm extends javax.swing.JFrame {
 			
 			return true;
 		}
+	}
+	
+	public static void main(final String args[]) {
+		java.awt.EventQueue.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				final File file = new File(args.length != 1 ? "" : args[0]);
+				
+				MainForm form = new MainForm();
+				form.setVisible(true);
+				
+				if(file.exists() && ! file.isDirectory()) {
+					if(FilenameUtils.isExtension(file.getPath(), "callgraph")) {
+						form.open(file);
+					}
+					if(FilenameUtils.isExtension(file.getPath(), "jar")) {
+						LaunchDialog launchDialog = new LaunchDialog(file, form, true);
+		
+						launchDialog.setVisible(true);
+
+						if(launchDialog.launched()) form.launch(launchDialog.getLaunchConfiguration());
+					}
+				}
+			}
+		});
 	}
 }

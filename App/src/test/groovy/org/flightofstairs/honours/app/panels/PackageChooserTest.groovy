@@ -43,8 +43,9 @@ class PackageChooserTest extends GroovyTestCase {
 		
 		assertEquals(expectedPackagesJHotDraw, PackageChooser.packagesUsed(PackageChooser.jarClasses(file)));
 	}
-	
-	void testDisplay() {
+
+	// Change name for execution. Displays dialog.
+	void dont_testDisplay() {
 		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
 		assertTrue(file.exists());
 		

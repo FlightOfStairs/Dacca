@@ -18,6 +18,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 	    <manifest>
 	      <mainClass>org.flightofstairs.honours.app.forms.MainForm</mainClass>
 	    </manifest>
+	    <manifestEntries>
+	      <Premain-Class>org.aspectj.weaver.loadtime.Agent</Premain-Class>
+	      <Can-Redefine-Classes>true</Can-Redefine-Classes>
+	    </manifestEntries>
 	  </archive>
 	</configuration>
 	<executions>
@@ -77,6 +81,12 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <groupId>codeproject</groupId>
       <artifactId>closabletabbedpane</artifactId>
       <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.4</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   
