@@ -2,6 +2,8 @@ package org.flightofstairs.honours.app.panels
 
 import java.util.jar.JarFile;
 
+import java.util.List;
+
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
 import javax.swing.tree.TreeNode;
@@ -13,6 +15,9 @@ import java.awt.BorderLayout;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingListener;
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import org.gcontracts.annotations.*
 import groovy.transform.Synchronized
@@ -48,12 +53,58 @@ class PackageChooser extends CheckboxTree {
 		expandRow(0);
 	}
 	
-	@Requires({ packages != null })
-	private setPackageList(List<String> packages) {
+	private Set<String> getPackages() {
+		def packages = [] as Set;
 		
-		addPackages(model.getRoot(), packages)
+		DefaultMutableTreeNode root = model.getRoot();
 		
-		notifyListeners();
+		for(DefaultMutableTreeNode child : root.children()) {
+			packages << getPackagesFrom(child);
+		}
+		
+		return packages;
+	}
+	
+	private static Set<String> getPackagesFrom(DefaultMutableTreeNode node) {
+		if(node.isLeaf()) return [node.getUserObject().toString()];
+		
+		def packages = [] as Set;
+		
+		for(DefaultMutableTreeNode child : node.children()) {
+			packages.addAll(getPackagesFrom(child).collect { node.getUserObject().toString() + "." + it});
+		}
+		
+		return packages;
+	}
+	
+	private void setPackages(final Set<String> packages) {
+		def sortedList = packages.sort();
+		
+		def root = model.getRoot();
+		
+		sortedList.each {
+			addPackageParts(root);
+		}
+	}
+	
+	private static void addPackageParts(DefaultMutableTreeNode node, List<String> classParts) {
+		if(classParts.size() == 0) return;
+		
+		TreeNode next;
+		
+		for(TreeNode child : node.children()) {
+			if(child.getUserObject() == classParts[0]) {
+				next = child;
+				break;
+			}
+		}
+		
+		if(next == null) {
+			next = new DefaultMutableTreeNode(classParts[0]);
+			node.add(next);
+		}
+		
+		addClassParts(next, classParts[1..<classParts.size()]);
 	}
 	
 	@Requires({ listener != null && ! listeners.contains(listener) })
@@ -69,37 +120,6 @@ class PackageChooser extends CheckboxTree {
 	@Synchronized
 	private void notifyListeners() {
 		listeners.each { it.eventOccurred() }
-	}
-	
-	@Requires({ node != null && packages != null })
-	private void addPackages(DefaultMutableTreeNode node, List<String> packages) {
-		while(packages.size() != 0) {
-			def first = packages.remove(0);
-			
-			def firstParts = first.tokenize('.');
-			
-			if(firstParts.size() == 1) {
-				node.add(new DefaultMutableTreeNode(firstParts[0]));
-				continue;
-			}
-			
-			def samePackage = [first];
-			
-			while(packages.size() != 0 && packages.get(0).tokenize('.')[0].equals(firstParts[0])) {
-				samePackage << packages.remove(0);
-			}
-			
-			samePackage = samePackage.collect { 
-				def parts = it.tokenize('.')
-				parts[1..<parts.size()].join(".")
-			}
-			
-			TreeNode newNode = node.children().find { it.getUserObject().equals(firstParts[0]) };
-			if(newNode == null) newNode = new DefaultMutableTreeNode(firstParts[0]);
-			node.add(newNode);
-			
-			addPackages(newNode, samePackage);
-		}
 	}
 	
 	@Ensures({ result != null })
