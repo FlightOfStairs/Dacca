@@ -24,7 +24,7 @@ class GraphPanelTest extends GroovyTestCase {
 		orrery = CallGraph.open(file);
 	}
 	
-	void testHiddenSelection() {
+	void dont_testHiddenSelection() {
 		def gp = new GraphPanel(orrery, new HITSScorer(orrery))
 		// this stops GroovyTestCase complaining without having to display dialog during build.
 		
