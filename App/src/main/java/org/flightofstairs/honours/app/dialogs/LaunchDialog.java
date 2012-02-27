@@ -25,6 +25,8 @@ public class LaunchDialog extends javax.swing.JDialog {
 		this(parent, modal);
 
 		jarPath.setText(file.getPath());
+		
+		((PackageChooser) packageChooser).setRootText(file.getName());
 		((PackageChooser) packageChooser).updateClassList(JARUtils.classesInJarFile(file));
 	}
 
@@ -167,6 +169,7 @@ public class LaunchDialog extends javax.swing.JDialog {
 		jarPath.setText(fileChooser.getSelectedFile().getPath());
 		
 		// Cast since swing builder only knows about trees.
+		((PackageChooser) packageChooser).setRootText(fileChooser.getSelectedFile().getName());
 		((PackageChooser) packageChooser).updateClassList(JARUtils.classesInJarFile(fileChooser.getSelectedFile()));
 	}//GEN-LAST:event_chooseJarHandler
 

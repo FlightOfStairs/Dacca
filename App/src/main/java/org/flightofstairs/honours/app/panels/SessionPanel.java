@@ -58,6 +58,8 @@ public class SessionPanel extends javax.swing.JPanel {
 				recorder.recordSession();
 			}
 		});
+		
+		((PackageChooser) packageChooser).setRootText(launchConfig.getJARFile().getName());
 	}
 	
 	public SessionPanel(File callGraphFile) {
@@ -69,8 +71,8 @@ public class SessionPanel extends javax.swing.JPanel {
 		initComponents();
 		endInit();
 
+		((PackageChooser) packageChooser).setRootText(callGraphFile.getName());
 		((PackageChooser) packageChooser).updatePackageList(callGraph.classes());
-		
 	}
 	
 	public void closing() {
