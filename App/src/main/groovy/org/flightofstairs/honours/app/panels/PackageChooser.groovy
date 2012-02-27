@@ -70,18 +70,20 @@ class PackageChooser extends CheckboxTree {
 		notifyListeners();
 	}
 	
+	@Ensures({ result != null})
 	private Set<String> getPackages() {
 		def packages = [] as Set;
 		
 		DefaultMutableTreeNode root = model.getRoot();
 		
 		for(DefaultMutableTreeNode child : root.children()) {
-			packages << getPackagesFrom(child);
+			packages.addAll getPackagesFrom(child);
 		}
 		
 		return packages;
 	}
 	
+	@Ensures({ result != null})
 	private static Set<String> getPackagesFrom(DefaultMutableTreeNode node) {
 		if(node.isLeaf()) return [node.getUserObject().toString()];
 		
@@ -148,6 +150,7 @@ class PackageChooser extends CheckboxTree {
 		}
 	}
 	
+	@Ensures({ result != null})
 	private static TreeNode[] pathFrom(DefaultMutableTreeNode node, List<String> packageParts) {
 		if(packageParts.size() == 0) return [];
 		
@@ -160,12 +163,14 @@ class PackageChooser extends CheckboxTree {
 		return result as TreeNode[];
 	}
 	
+	@Ensures({ result != null})
 	private List<String> getExpandedPackages() {
 		def paths = getPackages().collect { new TreePath(pathFrom(model.getRoot(), it.split(".") as List<String>)) }
 		
-		return paths.findAll({ isNodeExpanded(it) })*.join(".");
+		return paths.findAll({ isExpanded(it) })*.join(".");
 	}
 	
+	@Ensures({ result != null})
 	private List<String> setExpandedPackages(List<String> packages) {
 		def paths = packages.collect { new TreePath(pathFrom(model.getRoot(), it.split(".") as List<String>)) }
 		

@@ -6,10 +6,62 @@ import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 
+import java.awt.GraphicsEnvironment;
+
 class PackageChooserTest extends GroovyTestCase {
 
+	public static final List<String> orreryPackages = [
+		"CH.ifa.draw.application",
+		"CH.ifa.draw.command",
+		"CH.ifa.draw.connector",
+		"CH.ifa.draw.contrib",
+		"CH.ifa.draw.figure.connection",
+		"CH.ifa.draw.framework",
+		"CH.ifa.draw.handle",
+		"CH.ifa.draw.locator",
+		"CH.ifa.draw.painter",
+		"CH.ifa.draw.palette",
+		"CH.ifa.draw.samples.javadraw",
+		"CH.ifa.draw.samples.net",
+		"CH.ifa.draw.samples.nothing",
+		"CH.ifa.draw.samples.pert",
+		"CH.ifa.draw.standard",
+		"CH.ifa.draw.storable",
+		"CH.ifa.draw.tool",
+		"CH.ifa.draw.util",
+		"orrery.handles",
+		"orrery.system"
+	]
+	
+	void testAdd() {
+		if(GraphicsEnvironment.isHeadless()) return;
+		
+		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
+		assertTrue(file.exists());
+		
+		PackageChooser chooser = new PackageChooser();
+		
+		def classList = JARUtils.classesInJarFile(file);
+		
+		chooser.updateClassList(classList);
+						
+		assertTrue(chooser.getPackages().containsAll(orreryPackages));
+
+		assertFalse(chooser.getPackages().contains("CH.ifa.draw.addition"));
+		
+		classList << "CH.ifa.draw.addition.NewClass.class";
+		
+		chooser.updateClassList(classList);
+		
+		assertTrue(chooser.getPackages().containsAll(orreryPackages));
+				
+		assertTrue(chooser.getPackages().contains("CH.ifa.draw.addition"));
+	}
+	
 	// Change name for execution. Displays dialog.
 	void testDisplay() {
+		if(GraphicsEnvironment.isHeadless()) return;
+		
 		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
 		assertTrue(file.exists());
 		
