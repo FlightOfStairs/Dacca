@@ -105,14 +105,16 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 		public List<String> getJVMArguments() {
 			List<String> args = new LinkedList<String>();
 			
-			String weaver = org.aspectj.weaver.loadtime.Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+			String weaverPath = org.aspectj.weaver.loadtime.Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 			
-			LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaver);
+                        File weaverFile = new File(weaverPath);
+                        
+			LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaverFile.getAbsolutePath());
 			
-			if(weaver.length() == 0)
+			if(! weaverFile.exists())
 				throw new RuntimeException("Can't find AspectJ weaver on cp.");
 			
-			args.add("-javaagent:" + weaver);
+			args.add("-javaagent:" + weaverFile.getAbsolutePath());
 			args.add("-Dorg.flightofstairs.honours.capture.port=" + port);
 			args.addAll(delegate.getJVMArguments());
 			
