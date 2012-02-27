@@ -48,7 +48,7 @@ public class SessionPanel extends javax.swing.JPanel {
 		initComponents();
 		endInit();
 		
-		((PackageChooser) packageChooser).setJarFile(launchConfig.getJARFile());
+		((PackageChooser) packageChooser).updateClassList(JARUtils.classesInJarFile(launchConfig.getJARFile()));
 		
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		
@@ -69,7 +69,7 @@ public class SessionPanel extends javax.swing.JPanel {
 		initComponents();
 		endInit();
 
-		((PackageChooser) packageChooser).setClassList(callGraphFile.getName(), callGraph.classes());
+		((PackageChooser) packageChooser).updatePackageList(callGraph.classes());
 		
 	}
 	

@@ -2,9 +2,12 @@ package org.flightofstairs.honours.app.panels
 
 import java.util.jar.JarFile;
 
+import java.util.List;
+
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -14,6 +17,9 @@ import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel;
 import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingListener;
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import org.gcontracts.annotations.*
 import groovy.transform.Synchronized
 
@@ -22,6 +28,8 @@ class PackageChooser extends CheckboxTree {
 		
 	private final List<NotificationListener> listeners = [];
 	
+	private final TreeCheckingListener treeCheckingListener = { notifyListeners() } as TreeCheckingListener;
+	
 	public PackageChooser() {
 		super();
 		
@@ -29,32 +37,149 @@ class PackageChooser extends CheckboxTree {
 		
 		getCheckingModel().setCheckingMode(TreeCheckingModel.CheckingMode.PROPAGATE_PRESERVING_CHECK)
 		
-		addTreeCheckingListener({ notifyListeners() } as TreeCheckingListener);
+		addTreeCheckingListener(treeCheckingListener);
+		
+		model.setRoot(new DefaultMutableTreeNode("Packages"));
 	}
 	
-	@Requires({ file != null && file.exists() })
-	public void setJarFile(File file) {
-		model.setRoot(new DefaultMutableTreeNode(file.getName()))
-		setPackageList(packagesUsed(jarClasses(file)));
+	public void setRootText(final String text) {
+		model.getRoot().setUserObject(text);
+	}
+
+	public void updateClassList(final List<String> classes) { updatePackageList(JARUtils.classPackages(classes)); }
+	
+	public void updatePackageList(final List<String> packages) {		
+		final def newPackages = packages.clone();
+		newPackages.removeAll(getPackages());
+		
+		final def previouslySelected = getSelectedPackages();
+		final def previouslyExpanded = getExpandedPackages();
+		
+		setPackages(packages)
+		
+		removeTreeCheckingListener(treeCheckingListener);
+
+		setSelectedPackages(previouslySelected);
+		setSelectedPackages(newPackages);
+		
+		addTreeCheckingListener(treeCheckingListener);
 		
 		expandRow(0);
-	}
-	
-	@Requires({ classes != null && rootText != null })
-	public void setClassList(String rootText, List<String> classes) {
-		model.setRoot(new DefaultMutableTreeNode(rootText))
-		setPackageList(packagesUsed(classes));
-		
-		expandRow(0);
-	}
-	
-	@Requires({ packages != null })
-	private setPackageList(List<String> packages) {
-		
-		addPackages(model.getRoot(), packages)
+		setExpandedPackages(previouslyExpanded);
 		
 		notifyListeners();
 	}
+	
+	@Ensures({ result != null})
+	private Set<String> getPackages() {
+		def packages = [] as Set;
+		
+		DefaultMutableTreeNode root = model.getRoot();
+		
+		for(DefaultMutableTreeNode child : root.children()) {
+			packages.addAll getPackagesFrom(child);
+		}
+		
+		return packages;
+	}
+	
+	@Ensures({ result != null})
+	private static Set<String> getPackagesFrom(DefaultMutableTreeNode node) {
+		if(node.isLeaf()) return [node.getUserObject().toString()];
+		
+		def packages = [] as Set;
+		
+		for(DefaultMutableTreeNode child : node.children()) {
+			packages.addAll(getPackagesFrom(child).collect { node.getUserObject().toString() + "." + it});
+		}
+		
+		return packages;
+	}
+	
+	private void setPackages(final Collection<String> packages) {
+		def sortedList = packages.sort();
+		
+		DefaultMutableTreeNode root = model.getRoot();
+		root.removeAllChildren();
+		
+		sortedList.each {
+			addPackageParts(root, it.tokenize("."));
+		}
+	}
+	
+	private static void addPackageParts(DefaultMutableTreeNode node, List<String> classParts) {
+		if(classParts.size() == 0) return;
+
+		TreeNode next;
+		
+		for(TreeNode child : node.children()) {
+			if(child.getUserObject() == classParts.head()) {
+				next = child;
+				break;
+			}
+		}
+				
+		if(next == null) {
+			next = new DefaultMutableTreeNode(classParts.head());
+			node.add(next);
+		}
+		
+		addPackageParts(next, classParts.tail());
+	}
+	
+	@Ensures({ result != null })
+	public List<String> getSelectedPackages() {
+		def roots = getCheckingRoots();
+		
+		if(roots.size() == 1 && roots[0].getPath().size() == 1)
+			return model.getRoot().children.collect { it.getUserObject() }
+		
+		return roots.collect { it.getPath()[1..<it.getPath().size()].join(".") }
+	}
+	
+	public void setSelectedPackages(List<String> packages) {		
+		for(item in packages) {
+			def pathParts = pathFrom(model.getRoot(), item.split(".") as List)
+			
+			def path = new TreePath(model.getRoot());
+			
+			while(pathParts.size() != 0) 
+				path = path.pathByAddingChild(pathParts.remove(0));
+			
+			setCheckingPath(path);
+		}
+	}
+	
+	@Ensures({ result != null})
+	private static TreeNode[] pathFrom(DefaultMutableTreeNode node, List<String> packageParts) {
+		if(packageParts.size() == 0) return [];
+		
+		def nextNode = node.children().toList().find({ it.getUserObject() == packageParts[0]});
+		
+		def result = [nextNode];
+		
+		result.addAll pathFrom(nextNode, packageParts.tail());
+		
+		return result as TreeNode[];
+	}
+	
+	@Ensures({ result != null})
+	private List<String> getExpandedPackages() {
+		def paths = getPackages().collect { new TreePath(pathFrom(model.getRoot(), it.split(".") as List<String>)) }
+		
+		return paths.findAll({ isExpanded(it) })*.join(".");
+	}
+	
+	@Ensures({ result != null})
+	private List<String> setExpandedPackages(List<String> packages) {
+		def paths = packages.collect { new TreePath(pathFrom(model.getRoot(), it.split(".") as List<String>)) }
+		
+		paths.each {
+			expandPath(it)
+		}
+	}
+	
+	////////////////////////////////////////////////////////////////////////////
 	
 	@Requires({ listener != null && ! listeners.contains(listener) })
 	@Ensures({ listeners.contains(listener) })
@@ -69,80 +194,5 @@ class PackageChooser extends CheckboxTree {
 	@Synchronized
 	private void notifyListeners() {
 		listeners.each { it.eventOccurred() }
-	}
-	
-	@Requires({ node != null && packages != null })
-	private void addPackages(DefaultMutableTreeNode node, List<String> packages) {
-		while(packages.size() != 0) {
-			def first = packages.remove(0);
-			
-			def firstParts = first.tokenize('.');
-			
-			if(firstParts.size() == 1) {
-				node.add(new DefaultMutableTreeNode(firstParts[0]));
-				continue;
-			}
-			
-			def samePackage = [first];
-			
-			while(packages.size() != 0 && packages.get(0).tokenize('.')[0].equals(firstParts[0])) {
-				samePackage << packages.remove(0);
-			}
-			
-			samePackage = samePackage.collect { 
-				def parts = it.tokenize('.')
-				parts[1..<parts.size()].join(".")
-			}
-			
-			TreeNode newNode = node.children().find { it.getUserObject().equals(firstParts[0]) };
-			if(newNode == null) newNode = new DefaultMutableTreeNode(firstParts[0]);
-			node.add(newNode);
-			
-			addPackages(newNode, samePackage);
-		}
-	}
-	
-	@Ensures({ result != null })
-	public List<String> getSelectedPackages() {
-		def roots = getCheckingRoots();
-		
-		if(roots.size() == 1 && roots[0].getPath().size() == 1)
-			return model.getRoot().children.collect { it.getUserObject() }
-		
-		return roots.collect { it.getPath()[1..<it.getPath().size()].join(".") }
-	}
-	
-	@Requires({ classes != null })
-	@Ensures({ result != null })
-	private static List<String> packagesUsed(List<String> classes) {
-		def packages = [] as Set
-		
-		classes.each {
-			def parts = it.tokenize('.')
-			
-			(0..<parts.size() - 2).each {
-				packages << parts[0..it].join(".");
-			}
-		}
-		
-		return packages.sort { it }
-	}
-	
-	@Requires({ file != null && file.exists() })
-	@Ensures({ result != null && ! result.any { it.endsWith(".class") } })
-	private static List<String> jarClasses(File file) {
-		JarFile jarFile = new JarFile(file);
-		
-		def classes = [] as Set;
-
-		jarFile.entries().each {
-			def parts = it.getName().tokenize('.')
-			if(parts[parts.size() - 1].equals("class")) {
-				parts = it.getName().tokenize('/')		// TODO check this on windows.
-				classes << parts[0..<parts.size()].join(".")
-			}
-		}
-		
-		return classes.sort { it };
 	}
 }
