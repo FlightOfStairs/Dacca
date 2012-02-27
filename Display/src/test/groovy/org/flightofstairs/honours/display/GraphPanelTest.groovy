@@ -33,7 +33,9 @@ class GraphPanelTest extends GroovyTestCase {
 		gp.selectionModel.setSelection("orrery.PlanetFigure");
 	}
 	
-	void testDisplay() {
+	void dont_testDisplay() {
+		if(GraphicsEnvironment.isHeadless()) return;
+		
 		def gp = new GraphPanel(orrery, new HITSScorer(orrery));
 		gp.setPreferredSize(new Dimension(800, 800));
 		gp.initGraphPanel();

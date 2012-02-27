@@ -58,8 +58,7 @@ class PackageChooserTest extends GroovyTestCase {
 		assertTrue(chooser.getPackages().contains("CH.ifa.draw.addition"));
 	}
 	
-	// Change name for execution. Displays dialog.
-	void testDisplay() {
+	void dont_testDisplay() {
 		if(GraphicsEnvironment.isHeadless()) return;
 		
 		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
