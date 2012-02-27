@@ -2,8 +2,6 @@ package org.flightofstairs.honours.app.forms;
 
 import java.io.File;
 import java.rmi.RemoteException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.FilenameUtils;
@@ -11,6 +9,7 @@ import org.flightofstairs.honours.app.dialogs.LaunchDialog;
 import org.flightofstairs.honours.app.dialogs.MergeDialog;
 import org.flightofstairs.honours.app.panels.SessionPanel;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tabbedpane.ClosableTabbedPane;
 
@@ -208,7 +207,7 @@ public class MainForm extends javax.swing.JFrame {
 			tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
 
 		} catch (RemoteException ex) {
-			Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
+            LoggerFactory.getLogger(MainForm.class).error("", ex);
 		}
 	}
 	

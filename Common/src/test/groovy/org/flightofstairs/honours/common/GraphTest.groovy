@@ -124,7 +124,7 @@ class GraphTest extends GroovyTestCase {
 		
 		t.start();
 		
-		sleep(10);
+		sleep(100);
 		
 		assertEquals(2, g.classes().size());
 	}

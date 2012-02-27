@@ -94,6 +94,8 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	@Ensures({ file.exists() })
 	@Synchronized("graphLock")
 	public void save(File file) {
+        LoggerFactory.getLogger(CallGraph.class).debug("Saving callgraph: {}", file);
+
 		file.withObjectOutputStream() { outStream ->
 			outStream << this
 		}
@@ -102,6 +104,8 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	@Requires({ file.exists() && ! file.isDirectory() })
 	@Ensures({ result != null })
 	public static CallGraph open(File file) {
+        LoggerFactory.getLogger(CallGraph.class).debug("Opening callgraph: {}", file);
+
 		file.withObjectInputStream() { instream -> 
 			return instream.readObject();
 		}
