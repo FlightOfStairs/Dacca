@@ -5,6 +5,7 @@ import java.rmi.RemoteException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.FilenameUtils;
+import org.flightofstairs.honours.app.dialogs.HTMLDialog;
 import org.flightofstairs.honours.app.dialogs.LaunchDialog;
 import org.flightofstairs.honours.app.dialogs.MergeDialog;
 import org.flightofstairs.honours.app.panels.SessionPanel;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import tabbedpane.ClosableTabbedPane;
 
 public class MainForm extends javax.swing.JFrame {
-
 	public MainForm() {
 		super();
 		initComponents();
@@ -37,6 +37,9 @@ public class MainForm extends javax.swing.JFrame {
         exitMenuItem = new javax.swing.JMenuItem();
         toolMenu = new javax.swing.JMenu();
         mergeMenuItem = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        helpMenuItem = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Dacca");
@@ -108,6 +111,26 @@ public class MainForm extends javax.swing.JFrame {
         toolMenu.add(mergeMenuItem);
 
         menubar.add(toolMenu);
+
+        jMenu1.setText("Help");
+
+        helpMenuItem.setText("Help");
+        helpMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(helpMenuItem);
+
+        aboutMenuItem.setText("About");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(aboutMenuItem);
+
+        menubar.add(jMenu1);
 
         setJMenuBar(menubar);
 
@@ -181,10 +204,22 @@ public class MainForm extends javax.swing.JFrame {
 			((SessionPanel) tabPanel.getSelectedComponent()).save();
 	}//GEN-LAST:event_saveMenuItemActionPerformed
 
+	private void helpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpMenuItemActionPerformed
+		(new HTMLDialog(this, "Dacca Help", "/Help.html")).setVisible(true);
+
+	}//GEN-LAST:event_helpMenuItemActionPerformed
+
+	private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
+		(new HTMLDialog(this, "About Dacca", "/About.html")).setVisible(true);
+	}//GEN-LAST:event_aboutMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem helpMenuItem;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;

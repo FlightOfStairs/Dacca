@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.GraphicsEnvironment;
 
 class PackageChooserTest extends GroovyTestCase {
-
+	
 	public static final List<String> orreryPackages = [
 		"CH.ifa.draw.application",
 		"CH.ifa.draw.command",
