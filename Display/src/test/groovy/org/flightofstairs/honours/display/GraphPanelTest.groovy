@@ -8,8 +8,7 @@ import java.awt.event.ActionListener;
 import org.flightofstairs.honours.common.CallGraph;
 
 import java.awt.Dimension;
-
-import org.junit.Ignore
+import java.awt.GraphicsEnvironment;
 
 import org.flightofstairs.honours.analysis.HITSScorer;
 
@@ -24,7 +23,9 @@ class GraphPanelTest extends GroovyTestCase {
 		orrery = CallGraph.open(file);
 	}
 	
-	void dont_testHiddenSelection() {
+	void testHiddenSelection() {
+		if(GraphicsEnvironment.isHeadless()) return;
+		
 		def gp = new GraphPanel(orrery, new HITSScorer(orrery))
 		// this stops GroovyTestCase complaining without having to display dialog during build.
 		
@@ -32,7 +33,7 @@ class GraphPanelTest extends GroovyTestCase {
 		gp.selectionModel.setSelection("orrery.PlanetFigure");
 	}
 	
-	void dont_testDisplay() {
+	void testDisplay() {
 		def gp = new GraphPanel(orrery, new HITSScorer(orrery));
 		gp.setPreferredSize(new Dimension(800, 800));
 		gp.initGraphPanel();

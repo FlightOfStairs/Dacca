@@ -26,7 +26,9 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.RenderContext;
 
 import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.TransformerUtils;
 import org.apache.commons.collections15.Predicate;
+import org.apache.commons.collections15.PredicateUtils;
 
 import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.common.ExclusiveGraphUser;
@@ -53,6 +55,12 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	public static final Color NEAR_EDGE_COLOUR = Color.blue;
 	public static final Color UNSELECTED_EDGE_COLOUR = Color.black;
 	
+	public static final Color VISIBLE_EDGE_COLOUR = Color.black;
+	public static final Color HIDDEN_EDGE_COLOUR = Color.lightGray;
+	
+	
+	public static final Color HIDDEN_COLOUR = Color.black;
+	
 	public static final float SELECTED_EDGE_WIDTH = 2f;
 	public static final float NEAR_EDGE_WIDTH = 1.5f
 	
@@ -62,6 +70,8 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	private final VisualizationViewer<V, ?> viewer;
 	
 	private ClassScorer scorer;
+	
+	private final PackageFilter packageFilter = new PackageFilter();
 	
 	public final SelectedClassModel selectionModel = new SelectedClassModel();
 	
@@ -82,6 +92,8 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 
         viewer = new SafeVisualizationViewer(callGraph, staticLayout);
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Renderer.VertexLabel.Position.CNTR);
+		
+		viewer.setBackground(Color.white);
 		
 		setScorer(scorer);
 	}
@@ -135,12 +147,19 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		refreshTransformers();
 	}
 	
+	public void setPackages(final Collection<String> packages) {
+		packageFilter.setPackages(packages);
+		refreshTransformers();
+	}
+	
 	private void refreshTransformers() {
 		RenderContext context = viewer.getRenderContext();
 		
 		context.setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
 		
 		context.setVertexFillPaintTransformer({
+				if(! packageFilter.evaluate(it)) return HIDDEN_COLOUR;
+				
 				try {
 					def greenNess = (int) (255 * scorer.rank()[it])
 					return new Color(100, 255, 100, greenNess)
@@ -148,7 +167,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 				return Color.white
 			} as Transformer)
 		
-		def hidePredicate = new HidePredicate(callGraph, scorer, context);
+		def hidePredicate = PredicateUtils.allPredicate([packageFilter, new HidePredicate(callGraph, scorer, context)])
 		
 		context.setVertexShapeTransformer(new HideTransformers(
 				hidePredicate,
@@ -161,6 +180,20 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 				NameTransformers.Short,
 				{ "" } as Transformer
 			));
+		
+		context.setEdgeDrawPaintTransformer({ e ->
+				def out;
+				
+				callGraph.runExclusively({
+						def endPoints = callGraph.getGraph().getEndpoints(e);
+						
+						if(endPoints.any { selectionModel.isSelected(it) }) out = NEAR_EDGE_COLOUR;
+						else if(endPoints.every { hidePredicate.evaluate(it) }) out = VISIBLE_EDGE_COLOUR 
+						else out =  HIDDEN_EDGE_COLOUR
+				} as ExclusiveGraphUser)
+			
+				return out
+		} as Transformer)
 
 		redraw();
 	}
