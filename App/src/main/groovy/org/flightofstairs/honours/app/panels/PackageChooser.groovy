@@ -178,9 +178,7 @@ class PackageChooser extends CheckboxTree {
 			expandPath(it)
 		}
 	}
-	
-	////////////////////////////////////////////////////////////////////////////
-	
+		
 	@Requires({ listener != null && ! listeners.contains(listener) })
 	@Ensures({ listeners.contains(listener) })
 	@Synchronized

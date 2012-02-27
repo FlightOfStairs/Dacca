@@ -26,6 +26,9 @@ import org.flightofstairs.honours.capture.recorder.Recorder;
 import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.display.GraphPanel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SessionPanel extends javax.swing.JPanel {
 	
 	private File saveLocation = null;
@@ -128,6 +131,16 @@ public class SessionPanel extends javax.swing.JPanel {
 				}
 				
 				((GraphPanel) displayPanel).selectionModel.setSelection(selected);
+			}
+		});
+		
+		((GraphPanel) displayPanel).setPackages(((PackageChooser) packageChooser).getSelectedPackages());
+		
+		((PackageChooser) packageChooser).addNotificationListener(new NotificationListener() {
+			@Override public void eventOccurred() {
+				LoggerFactory.getLogger(SessionPanel.class).debug("Setting selected packages: {}", ((PackageChooser) packageChooser).getSelectedPackages());
+				
+				((GraphPanel) displayPanel).setPackages(((PackageChooser) packageChooser).getSelectedPackages());
 			}
 		});
 	}
