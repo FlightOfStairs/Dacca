@@ -6,6 +6,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.flightofstairs.honours.app.panels.PackageChooser;
+import org.flightofstairs.honours.app.panels.JARUtils;
 import org.flightofstairs.honours.capture.launchers.BaseLaunchConfiguration;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 
@@ -24,7 +25,7 @@ public class LaunchDialog extends javax.swing.JDialog {
 		this(parent, modal);
 
 		jarPath.setText(file.getPath());
-		((PackageChooser) packageChooser).setJarFile(file);
+		((PackageChooser) packageChooser).updateClassList(JARUtils.classesInJarFile(file));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -166,7 +167,7 @@ public class LaunchDialog extends javax.swing.JDialog {
 		jarPath.setText(fileChooser.getSelectedFile().getPath());
 		
 		// Cast since swing builder only knows about trees.
-		((PackageChooser) packageChooser).setJarFile(fileChooser.getSelectedFile());
+		((PackageChooser) packageChooser).updateClassList(JARUtils.classesInJarFile(fileChooser.getSelectedFile()));
 	}//GEN-LAST:event_chooseJarHandler
 
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed

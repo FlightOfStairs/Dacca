@@ -7,45 +7,9 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 
 class PackageChooserTest extends GroovyTestCase {
-	
-	private static final List<String> expectedPackagesJHotDraw = [
-		"CH",
-		"CH.ifa",
-		"CH.ifa.draw",
-		"CH.ifa.draw.application",
-		"CH.ifa.draw.command",
-		"CH.ifa.draw.connector",
-		"CH.ifa.draw.contrib",
-		"CH.ifa.draw.figure",
-		"CH.ifa.draw.figure.connection",
-		"CH.ifa.draw.framework",
-		"CH.ifa.draw.handle",
-		"CH.ifa.draw.locator",
-		"CH.ifa.draw.painter",
-		"CH.ifa.draw.palette",
-		"CH.ifa.draw.samples",
-		"CH.ifa.draw.samples.javadraw",
-		"CH.ifa.draw.samples.net",
-		"CH.ifa.draw.samples.nothing",
-		"CH.ifa.draw.samples.pert",
-		"CH.ifa.draw.standard",
-		"CH.ifa.draw.storable",
-		"CH.ifa.draw.tool",
-		"CH.ifa.draw.util",
-		"orrery",
-		"orrery.handles",
-		"orrery.system"
-	]
-	
-	void testPackageList() {
-		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
-		assertTrue(file.exists());
-		
-		assertEquals(expectedPackagesJHotDraw, PackageChooser.packagesUsed(PackageChooser.jarClasses(file)));
-	}
 
 	// Change name for execution. Displays dialog.
-	void dont_testDisplay() {
+	void testDisplay() {
 		def file = new File(getClass().getResource("/JHotDraw.jar").getFile());
 		assertTrue(file.exists());
 		
@@ -56,9 +20,9 @@ class PackageChooserTest extends GroovyTestCase {
 		chooser.addNotificationListener({ notifyCount++ } as NotificationListener);
 		chooser.addNotificationListener({ println chooser.getSelectedPackages() } as NotificationListener)
 		
-		chooser.setJarFile(file);
+		chooser.updateClassList(JARUtils.classesInJarFile(file));
 		
-		assertEquals([], chooser.getSelectedPackages());
+		assertEquals(["CH", "orrery"], chooser.getSelectedPackages());
 		
 		assertEquals(1, notifyCount);
 		
