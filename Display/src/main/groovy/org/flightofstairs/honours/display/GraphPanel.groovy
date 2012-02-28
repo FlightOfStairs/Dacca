@@ -181,7 +181,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 				{ "" } as Transformer
 			));
 		
-		context.setEdgeDrawPaintTransformer({ e ->
+		def edgePaintTransformer = { e ->
 				def out;
 				
 				callGraph.runExclusively({
@@ -193,7 +193,12 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 				} as ExclusiveGraphUser)
 			
 				return out
-		} as Transformer)
+		} as Transformer
+		
+		context.setArrowDrawPaintTransformer(edgePaintTransformer);
+		context.setArrowFillPaintTransformer(edgePaintTransformer);
+		
+		context.setEdgeDrawPaintTransformer(edgePaintTransformer);
 
 		redraw();
 	}
