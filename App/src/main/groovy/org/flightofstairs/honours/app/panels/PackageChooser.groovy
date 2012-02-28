@@ -43,19 +43,26 @@ class PackageChooser extends CheckboxTree {
 	}
 	
 	public void setRootText(final String text) {
+		LoggerFactory.getLogger(PackageChooser.class).debug("Setting root text: {}", text);
+		
 		model.getRoot().setUserObject(text);
 	}
 
 	public void updateClassList(final List<String> classes) { updatePackageList(JARUtils.classPackages(classes)); }
 	
-	public void updatePackageList(final List<String> packages) {		
-		final def newPackages = packages.clone();
-		newPackages.removeAll(getPackages());
+	public void updatePackageList(final List<String> packages) {
+		final def oldPackages = getPackages();
+		final def newPackages = packages.findAll({ p -> oldPackages.every({ ! it.startsWith(p) }) });
+		
+		if(newPackages.isEmpty()) return;
+	
+	
+		LoggerFactory.getLogger(PackageChooser.class).debug("Adding new packages: {}", newPackages);
 		
 		final def previouslySelected = getSelectedPackages();
 		final def previouslyExpanded = getExpandedPackages();
 		
-		setPackages(packages)
+		setPackages(packages);
 		
 		removeTreeCheckingListener(treeCheckingListener);
 
@@ -66,7 +73,7 @@ class PackageChooser extends CheckboxTree {
 		
 		expandRow(0);
 		setExpandedPackages(previouslyExpanded);
-		
+				
 		notifyListeners();
 	}
 	
@@ -102,9 +109,13 @@ class PackageChooser extends CheckboxTree {
 		DefaultMutableTreeNode root = model.getRoot();
 		root.removeAllChildren();
 		
+		assert(root.getChildCount() == 0);
+		
 		sortedList.each {
 			addPackageParts(root, it.tokenize("."));
 		}
+		
+		model.reload();
 	}
 	
 	private static void addPackageParts(DefaultMutableTreeNode node, List<String> classParts) {
@@ -118,7 +129,7 @@ class PackageChooser extends CheckboxTree {
 				break;
 			}
 		}
-				
+		
 		if(next == null) {
 			next = new DefaultMutableTreeNode(classParts.head());
 			node.add(next);

@@ -24,6 +24,7 @@ import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
 import org.flightofstairs.honours.capture.recorder.Recorder;
 import org.flightofstairs.honours.common.CallGraph;
+import org.flightofstairs.honours.common.CallGraphListener;
 import org.flightofstairs.honours.display.GraphPanel;
 
 import org.slf4j.Logger;
@@ -59,6 +60,13 @@ public class SessionPanel extends javax.swing.JPanel {
 			@Override
 			public void run() {
 				recorder.recordSession();
+			}
+		});
+		
+		callGraph.addListener(new CallGraphListener() {
+			@Override
+			public void callGraphChange(CallGraph callGraph) {
+				((PackageChooser) packageChooser).updateClassList(callGraph.classes());
 			}
 		});
 		
