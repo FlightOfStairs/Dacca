@@ -103,6 +103,13 @@ public class SessionPanel extends javax.swing.JPanel {
 			if(ret != JFileChooser.APPROVE_OPTION) return;
 			
 			saveLocation = fileChooser.getSelectedFile();
+
+			// Append with .callgraph, if we've not done so, and it wont clobber anything
+			if(! saveLocation.getPath().endsWith(".callgraph")) {
+				File newSaveLocation = new File(saveLocation.getPath() + ".callgraph");
+				
+				if(! newSaveLocation.exists()) saveLocation = newSaveLocation;
+			}
 		}
 		
 		callGraph.save(saveLocation);
