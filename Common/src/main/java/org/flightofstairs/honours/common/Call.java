@@ -3,6 +3,9 @@ package org.flightofstairs.honours.common;
 import java.io.Serializable;
 
 public final class Call implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
     final String caller;
     final String callee;
     final String method;
