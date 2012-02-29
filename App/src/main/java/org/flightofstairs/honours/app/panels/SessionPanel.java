@@ -336,7 +336,11 @@ public class SessionPanel extends javax.swing.JPanel {
 		
 			String name = value.toString();
 			
-			setText(name.substring(name.lastIndexOf(".") + 1));
+			// Shorten name if it's name column.
+			if(vColIndex == 0)
+				setText(name.substring(name.lastIndexOf(".") + 1));
+			else
+				setText(name);
 			
 			setToolTipText(name);
 			final Double score = (Double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0));
