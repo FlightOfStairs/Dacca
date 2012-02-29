@@ -5,10 +5,10 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
@@ -22,7 +22,7 @@ public enum Tracer {
 	 */ 
 	public static final int SUBMIT_DELAY = 200;
 	
-	private final List<Call> toSend = new LinkedList<Call>();
+	private final Queue<Call> toSend = new ConcurrentLinkedQueue<Call>();
 	
 	private final RemoteRecorder recorder;
 	
@@ -34,13 +34,10 @@ public enum Tracer {
 
 			recorder = (RemoteRecorder) registry.lookup("Recorder");
 		} catch (NumberFormatException  ex) {
-			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		} catch (RemoteException ex) {
-			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		} catch (NotBoundException ex) {
-			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		}
 		
@@ -49,9 +46,7 @@ public enum Tracer {
 	}
 	
 	public void traceCall(Call call) {
-		synchronized(toSend) {
 			toSend.add(call);
-		}
 	}
 	
 	
@@ -59,12 +54,18 @@ public enum Tracer {
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
-				Logger.getLogger(Tracer.class.getName()).log(Level.FINE, "Ending trace.");
 				try {
-					recorder.addCalls(toSend);
+					List<Call> toSendCopy = new LinkedList<Call>();
+					
+					Call polled;
+					
+					while((polled = toSend.poll()) != null) {
+						toSendCopy.add(polled);
+					}
+					
+					recorder.addCalls(toSendCopy);
 					recorder.end();
 				} catch (RemoteException ex) {
-					Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 		};
@@ -73,20 +74,24 @@ public enum Tracer {
 	}
 	
 	private void initSubmit() {
-		Timer timer = new Timer();
-		TimerTask task = new TimerTask() {
+		final Timer timer = new Timer();
+		final TimerTask task = new TimerTask() {
+			
 			@Override
 			public void run() {
-				Logger.getLogger(Tracer.class.getName()).log(Level.FINE, "Submitting calls.");
+				List<Call> toSendCopy;
+				
 				synchronized(toSend) {
-					try {
-						recorder.addCalls(toSend);
-						toSend.clear();
-					} catch (ConnectException ex) {
-						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-					} catch (RemoteException ex) {
-						Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-					}
+					toSendCopy = new LinkedList<Call>(toSend);
+				}
+				
+				try {
+					recorder.addCalls(toSendCopy);
+					toSend.clear();
+				} catch (ConnectException ex) {
+					Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+				} catch (RemoteException ex) {
+					Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 		};
