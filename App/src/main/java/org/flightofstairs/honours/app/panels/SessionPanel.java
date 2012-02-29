@@ -7,6 +7,7 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
@@ -332,9 +333,12 @@ public class SessionPanel extends javax.swing.JPanel {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int rowIndex, int vColIndex) {
-			setText(value.toString());
+		
+			String name = value.toString();
 			
-			setToolTipText((String)value.toString());
+			setText(name.substring(name.lastIndexOf(".") + 1));
+			
+			setToolTipText(name);
 			final Double score = (Double) panel.scorer.rank().get((String) table.getValueAt(rowIndex, 0));
 			
 			if(score != null) {
