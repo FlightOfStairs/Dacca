@@ -7,8 +7,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
@@ -20,7 +18,7 @@ public enum Tracer {
 	/**
 	 * Time between trace submits in ms.
 	 */ 
-	public static final int SUBMIT_DELAY = 200;
+	public static final int SUBMIT_DELAY = 50;
 	
 	private final Queue<Call> toSend = new ConcurrentLinkedQueue<Call>();
 	
