@@ -70,7 +70,7 @@ public aspect Aspect {
 		String callee = thisJoinPoint.getTarget().getClass().getCanonicalName();
 		String method = thisJoinPoint.getSignature().getName();
 
-		if(caller != null && callee != null) {
+		if(caller != null && callee != null && !callee.endsWith("[]")) {
 		
 			Call c = new Call(caller, callee, method);
 
