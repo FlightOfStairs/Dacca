@@ -65,6 +65,8 @@ public aspect Aspect {
 	
 	after() : anyCall() {
 		if(thisJoinPoint.getTarget() == null ) return;
+
+		if(Tracer.INSTANCE.waiting.get() > Tracer.INSTANCE.MAX_WAITING) return;
 				
 		String caller = thisEnclosingJoinPointStaticPart.getSourceLocation().getWithinType().getCanonicalName();
 		String callee = thisJoinPoint.getTarget().getClass().getCanonicalName();

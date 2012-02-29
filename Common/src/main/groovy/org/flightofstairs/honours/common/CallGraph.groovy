@@ -14,6 +14,8 @@ import org.gcontracts.annotations.*
 
 public class CallGraph<V extends Serializable> implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private final ReentrantLock graphLock = new ReentrantLock();
 	private final listenersLock = new Serializable() {}
 	
@@ -28,10 +30,10 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	private transient Set<CallGraphListener> listeners;
 		
 	@Requires({ call != null })
-	@Ensures({ def callRef = call;
+	/*@Ensures({ def callRef = call;
 			graph.containsVertex(call.caller) && graph.containsVertex(call.callee) &&
 			graph.findEdge(call.caller, call.callee).countCall(call) >= 1
-		})
+		})*/
 	@Synchronized("graphLock")
 	public void addCall(final Call call) {
 		graph.addVertex(call.caller);
@@ -46,6 +48,18 @@ public class CallGraph<V extends Serializable> implements Serializable {
 		existing.addCall(call);
 		
 		lastUpdate = System.currentTimeMillis();
+	}
+	
+	@Requires({ callCounts != null })
+	@Synchronized("graphLock")
+	public void addCallCounts(final Map<Call, Integer> callCounts) {
+		callCounts.each { call, count ->
+			addCall(call);
+			
+			def edge = graph.findEdge(call.caller, call.callee);
+			
+			edge.addCall(call, count - 1);
+		}
 	}
 	
 	@Requires({ other != null })

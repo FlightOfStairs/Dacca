@@ -3,12 +3,15 @@ package org.flightofstairs.honours.common
 import org.gcontracts.annotations.*
 
 public class ClassRelation implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	private final Map<Call, Integer> calls = [:];
 	
 	@Requires({ call != null })
-	public void addCall(Call call) {
-		if(calls.containsKey(call)) calls[call] = calls[call] + 1;
-		else calls[call] = 1;
+	public void addCall(Call call, int count = 1) {
+		if(calls.containsKey(call)) calls[call] = calls[call] + count;
+		else calls[call] = count;
 	}
 	
 	public int countAll() { return calls.values().sum(); }

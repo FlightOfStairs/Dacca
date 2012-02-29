@@ -10,12 +10,14 @@ import java.rmi.registry.Registry;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import org.flightofstairs.honours.capture.producer.AspectBuilder;
+import java.util.Map;
 import org.flightofstairs.honours.capture.launchers.JPBLauncher;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 import org.flightofstairs.honours.capture.launchers.Launcher;
+import org.flightofstairs.honours.capture.producer.AspectBuilder;
 import org.flightofstairs.honours.common.Call;
 import org.flightofstairs.honours.common.CallGraph;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	public int port;
 	
 	private final CallGraph<String> graph = new CallGraph<String>();
-	
+		
 	public RMIRecorder(LaunchConfiguration launchConfig) throws RemoteException {
 		super();
 		
@@ -66,10 +68,16 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	}
 
 	@Override
-	public void addCalls(List<Call> calls) throws RemoteException {
+	public void addCallCounts(final Map<Call, Integer> callCounts) throws RemoteException {
 		if(ended) throw new UnsupportedOperationException("Can't add calls after recording finished.");
 		
-		for(Call call : calls) graph.addCall(call);
+		Thread t = new Thread(new Runnable() {
+			@Override public void run() {
+				graph.addCallCounts(callCounts);
+			}
+		});
+		
+		t.start();
 	}
 
 	@Override
