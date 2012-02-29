@@ -83,6 +83,7 @@ public enum Tracer {
 				
 				synchronized(toSend) {
 					toSendCopy = new LinkedList<Call>(toSend);
+					toSend.clear();
 				}
 				
 				try {
