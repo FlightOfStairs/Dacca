@@ -155,7 +155,10 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	private void refreshTransformers() {
 		RenderContext context = viewer.getRenderContext();
 		
-		context.setVertexIncludePredicate(new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20))
+		context.setVertexIncludePredicate(PredicateUtils.orPredicate(
+				{ isConnectedToSelected(it.element) } as Predicate,
+				new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20)
+			))
 		
 		context.setVertexFillPaintTransformer({
 				if(! packageFilter.evaluate(it)) return HIDDEN_COLOUR;
@@ -167,7 +170,13 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 				return Color.white
 			} as Transformer)
 		
-		def hidePredicate = PredicateUtils.allPredicate([packageFilter, new HidePredicate(callGraph, scorer, context)])
+		def hidePredicate = PredicateUtils.orPredicate(
+				{ isConnectedToSelected(it) } as Predicate,
+				PredicateUtils.andPredicate(
+					packageFilter, 
+					new HidePredicate(callGraph, scorer, context
+				))
+			)
 		
 		context.setVertexShapeTransformer(new HideTransformers(
 				hidePredicate,
