@@ -17,7 +17,27 @@ public class ScorerFactory {
 			scorer.@scoreExtractor = { it.authority } as Transformer
 			return scorer
 		},
-		"Class Connectivity" : { new Connectivity(it) },
-		"Method Connectivity" : { new MethodConnectivity(it) }
+		"Coupling Degree" : {
+			def scorer = new SimpleScorer(it)
+			scorer.@scoreExtractor = { item, graph ->
+				def methodConnections = graph.getOutEdges(item).plus(graph.getInEdges(item))*.callVariety().plus([0]).sum()
+				def classConnections = graph.getSuccessorCount(item) + graph.getPredecessorCount(item)
+				
+				return classConnections == 0 ? 0 : methodConnections / classConnections
+			}
+			return scorer;
+		},
+		"Class Connectivity" : {
+			def scorer = new SimpleScorer(it)
+			scorer.@scoreExtractor = { item, graph -> graph.getSuccessorCount(item) + graph.getPredecessorCount(item) }
+			return scorer;
+		},
+		"Method Connectivity" : {
+			def scorer = new SimpleScorer(it)
+			scorer.@scoreExtractor = { item, graph ->
+				graph.getOutEdges(item).plus(graph.getInEdges(item))*.callVariety().plus([0]).sum()
+			}
+			return scorer;
+		}
 	);
 }

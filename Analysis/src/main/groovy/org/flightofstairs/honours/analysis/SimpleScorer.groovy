@@ -2,16 +2,20 @@ package org.flightofstairs.honours.analysis
 
 import edu.uci.ics.jung.graph.Graph
 
-import org.flightofstairs.honours.common.CallGraph;
+import org.apache.commons.collections15.Transformer;
+
+import org.flightofstairs.honours.common.CallGraph
 
 import org.gcontracts.annotations.*
 
-public class Connectivity<V extends Serializable> implements ClassScorer {
+public class SimpleScorer<V extends Serializable> implements ClassScorer {
+	
+	Closure scoreExtractor = { 1.0 }
 	
 	private final CallGraph callGraph;
 	
 	@Ensures({ this.callGraph != null })
-	public Connectivity(CallGraph<String> callGraph) {
+	public SimpleScorer(CallGraph<String> callGraph) {
 		this.callGraph = callGraph;
 	} 
 
@@ -21,10 +25,10 @@ public class Connectivity<V extends Serializable> implements ClassScorer {
 		Graph graph = callGraph.getGraph();
 		
 		callGraph.classes().each {
-			results[it] = graph.getSuccessorCount(it) + graph.getPredecessorCount(it);
+			results[it] = scoreExtractor(it, graph);
 		}
 		
 		return results;
 	}
-}
 
+}

@@ -94,7 +94,7 @@ class ScoreTest extends GroovyTestCase {
 	}
 	
 	private static List<ClassScorer> scorers(CallGraph callGraph) {
-		return ["Total HITS", "Weighted HITS", "Class Connectivity", "Method Connectivity"].collect { ScorerFactory.scorers[it](callGraph) };
+		return ["Total HITS", "Weighted HITS", "Class Connectivity","Coupling Degree", "Method Connectivity"].collect { ScorerFactory.scorers[it](callGraph) };
 	}
 }
 
