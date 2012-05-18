@@ -57,7 +57,7 @@ class ScoreTest extends GroovyTestCase {
 	void testCacheDecorator() {
 		scorers(orrery).each {
 			def results = it.rank();
-			
+
 			def cached = new CacheDecorator(orrery, it);
 			
 			def start = System.nanoTime();
