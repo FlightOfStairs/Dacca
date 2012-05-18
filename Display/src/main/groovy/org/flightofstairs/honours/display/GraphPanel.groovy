@@ -213,21 +213,24 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	}
 	
 	private void redraw() {
-		callGraph.runExclusively({ graphLayout.initialize() } as ExclusiveGraphUser)
-		
-		Relaxer relaxer = new VisRunner((IterativeContext)graphLayout);
-        relaxer.stop();
-		
-		relaxer.prerelax();
-		
-		LayoutTransition lt;
-		
+		Animator animator
+		Relaxer relaxer
 		callGraph.runExclusively({
+
+			graphLayout.initialize()
+			
+			relaxer = new VisRunner((IterativeContext)graphLayout);
+			relaxer.stop();
+
+			relaxer.prerelax();
+
 			StaticLayout staticLayout = new StaticLayout(callGraph.getGraph(), graphLayout);
-			lt = new LayoutTransition(viewer, viewer.getGraphLayout(), staticLayout);
+			def lt = new LayoutTransition(viewer, viewer.getGraphLayout(), staticLayout);
+
+			animator = new Animator(lt);
+
 		 } as ExclusiveGraphUser)
 	 
-		Animator animator = new Animator(lt);
 		animator.start();
 		
 		relaxer.resume();
