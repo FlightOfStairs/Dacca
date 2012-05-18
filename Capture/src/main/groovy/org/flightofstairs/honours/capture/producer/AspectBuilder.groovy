@@ -59,7 +59,7 @@ import org.flightofstairs.honours.common.Call;
 
 public aspect Aspect {
 	
-	pointcut anyCall() : call(* *.*(..)) && !within(org.flightofstairs.honours.capture..*) && ("""
+	pointcut anyCall() : call(* *.*(..)) && !within(org.flightofstairs.honours..*) && ("""
 
 	private static final TEMPLATE2 = """);
 	
@@ -72,12 +72,14 @@ public aspect Aspect {
 		String callee = thisJoinPoint.getTarget().getClass().getCanonicalName();
 		String method = thisJoinPoint.getSignature().getName();
 
-		if(caller != null && callee != null && !callee.endsWith("[]")) {
-		
-			Call c = new Call(caller, callee, method);
+		if(caller == null) return;
+		if(callee == null) return;
+		if(callee.endsWith("[]")) return;
 
-			Tracer.INSTANCE.traceCall(c);
-		}
+		Call c = new Call(caller, callee, method);
+
+		Tracer.INSTANCE.traceCall(c);
+
 	}
 }
 """

@@ -24,7 +24,8 @@ public class CacheDecorator<V extends Serializable> implements ClassScorer {
 		
 		callGraph.addListener({ synchronized(cacheLock) { cache = null } } as CallGraphListener)
 	}
-	
+
+	@Ensures({ result.keySet().containsAll(callGraph.classes()) })
 	@Synchronized("cacheLock")
 	public Map<V, Double> rank() {
 		if(cache != null) return cache;

@@ -22,6 +22,7 @@ public class HITSWeighted<V extends Serializable> implements ClassScorer {
 		this.callGraph = callGraph;
 	}
 
+	@Ensures({ result.keySet().containsAll(callGraph.classes()) })
 	public Map<V, Double> rank() {
 		def results = [:]
 		

@@ -17,8 +17,9 @@ public class SimpleScorer<V extends Serializable> implements ClassScorer {
 	@Ensures({ this.callGraph != null })
 	public SimpleScorer(CallGraph<String> callGraph) {
 		this.callGraph = callGraph;
-	} 
+	}
 
+	@Ensures({ result.keySet().containsAll(callGraph.classes()) })
 	public Map<V, Double> rank() {
 		def results = [:];
 		

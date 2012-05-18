@@ -5,7 +5,7 @@ import edu.uci.ics.jung.algorithms.scoring.HITS
 
 import org.apache.commons.collections15.Transformer;
 
-import org.flightofstairs.honours.common.CallGraph
+import org.flightofstairs.honours.common.CallGraph;
 
 import org.gcontracts.annotations.*
 
@@ -19,8 +19,11 @@ public class HITSScorer<V extends Serializable> implements ClassScorer {
 	
 	public HITSScorer(CallGraph<String> callGraph) {
 		this.callGraph = callGraph;
-	} 
+	}
 
+
+
+	@Ensures({ result.keySet().containsAll(callGraph.classes()) })
 	public Map<V, Double> rank() {
 		def results = [:]
 		

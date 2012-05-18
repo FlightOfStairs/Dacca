@@ -13,12 +13,15 @@ public class ClassRelation implements Serializable {
 		if(calls.containsKey(call)) calls[call] = calls[call] + count;
 		else calls[call] = count;
 	}
-	
+
+	@Ensures({ result >= 0 })
 	public int countAll() { return calls.values().sum(); }
-	
+
+	@Ensures({ result >= 0 })
 	public int callVariety() { return calls.size(); }
 	
 	@Requires({ call != null })
+	@Ensures({ result >= 0 })
 	public int countCall(Call call) { return calls.containsKey(call) ? calls[call] : 0; }
 	
 	@Ensures({ result != null && result.size() == (onlyUnique ? callVariety() : countAll())	})

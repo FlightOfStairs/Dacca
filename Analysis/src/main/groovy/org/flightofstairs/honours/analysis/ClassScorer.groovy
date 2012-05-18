@@ -5,8 +5,6 @@ import org.flightofstairs.honours.common.CallGraph;
 import org.gcontracts.annotations.*
 
 public interface ClassScorer<V extends Serializable> {
-	
-	@Requires({ callGraph != null })
-	@Ensures({ result != null && result.keySet().containsAll(callGraph.classes()) })
+	@Ensures({ result != null })
 	public Map<V, Double> rank();
 }

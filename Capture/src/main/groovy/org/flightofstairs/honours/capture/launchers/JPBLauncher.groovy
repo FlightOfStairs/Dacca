@@ -11,10 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
-import org.flightofstairs.honours.capture.recorder.UNCCompatibleJavaProcessBuilder;
+import org.flightofstairs.honours.capture.recorder.UNCCompatibleJavaProcessBuilder
+import org.gcontracts.annotations.Requires;
 
 public class JPBLauncher implements Launcher {
-		
 	@Override
 	public void launch(LaunchConfiguration launchConfig) {
 		

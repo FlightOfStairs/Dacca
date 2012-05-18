@@ -1,7 +1,6 @@
 package org.flightofstairs.honours.common
 
 import edu.uci.ics.jung.graph.Graph
-import edu.uci.ics.jung.graph.util.Graphs
 
 class GraphTest extends GroovyTestCase {
 	

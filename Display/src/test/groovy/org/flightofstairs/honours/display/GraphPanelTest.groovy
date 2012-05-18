@@ -27,8 +27,7 @@ class GraphPanelTest extends GroovyTestCase {
 		if(GraphicsEnvironment.isHeadless()) return;
 		
 		def gp = new GraphPanel(orrery, new HITSScorer(orrery))
-		// this stops GroovyTestCase complaining without having to display dialog during build.
-		
+
 		gp.initGraphPanel();
 		gp.selectionModel.setSelection("orrery.PlanetFigure");
 	}
