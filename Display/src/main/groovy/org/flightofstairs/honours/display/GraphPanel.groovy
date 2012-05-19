@@ -218,7 +218,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 		callGraph.runExclusively({
 
 			graphLayout.initialize()
-			
+
 			relaxer = new VisRunner((IterativeContext)graphLayout);
 			relaxer.stop();
 

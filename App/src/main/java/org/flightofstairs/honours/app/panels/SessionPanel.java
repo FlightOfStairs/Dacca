@@ -19,6 +19,7 @@ import org.flightofstairs.honours.analysis.CacheDecorator;
 import org.flightofstairs.honours.analysis.ClassScorer;
 import org.flightofstairs.honours.analysis.RankDecorator;
 import org.flightofstairs.honours.analysis.ScorerFactory;
+import org.flightofstairs.honours.app.dialogs.CallGraphInfoDialog;
 import org.flightofstairs.honours.app.dialogs.OverrideFileChooser;
 import org.flightofstairs.honours.app.table.ClassTableModel;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
@@ -36,6 +37,8 @@ public class SessionPanel extends javax.swing.JPanel {
 	private File saveLocation = null;
 	
 	private final CallGraph callGraph;
+
+	private final String name;
 		
 	private final DefaultComboBoxModel scorerSelectModel = new DefaultComboBoxModel();
 	
@@ -48,7 +51,9 @@ public class SessionPanel extends javax.swing.JPanel {
 		final Recorder recorder = new RMIRecorder(launchConfig);
 		
 		this.callGraph = recorder.getResults();
-		
+
+		name = launchConfig.getJARFile().getName();
+
 		startInit();		
 		initComponents();
 		endInit();
@@ -70,20 +75,21 @@ public class SessionPanel extends javax.swing.JPanel {
 				((PackageChooser) packageChooser).updateClassList(callGraph.classes());
 			}
 		});
-		
-		((PackageChooser) packageChooser).setRootText(launchConfig.getJARFile().getName());
+
+
 	}
 	
 	public SessionPanel(File callGraphFile) {
 		saveLocation = callGraphFile;
 		
 		callGraph = CallGraph.open(callGraphFile);
+
+		name = callGraphFile.getName();
 		
 		startInit();
 		initComponents();
 		endInit();
 
-		((PackageChooser) packageChooser).setRootText(callGraphFile.getName());
 		((PackageChooser) packageChooser).updatePackageList(callGraph.classes());
 	}
 	
@@ -107,6 +113,14 @@ public class SessionPanel extends javax.swing.JPanel {
 		}
 		
 		callGraph.save(saveLocation);
+	}
+
+	public void showInfo() {
+		JFrame frame = (JFrame) SwingUtilities.getRoot(this);
+		CallGraphInfoDialog infoDialog = new CallGraphInfoDialog(frame, callGraph);
+
+		infoDialog.setLocationRelativeTo(frame);
+		infoDialog.setVisible(true);
 	}
 
 	private ClassScorer getScorer() {
@@ -152,6 +166,8 @@ public class SessionPanel extends javax.swing.JPanel {
 				((GraphPanel) displayPanel).setPackages(((PackageChooser) packageChooser).getSelectedPackages());
 			}
 		});
+
+		((PackageChooser) packageChooser).setRootText(name);
 	}
 
 	
@@ -318,7 +334,7 @@ public class SessionPanel extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTree packageChooser;
     private javax.swing.JComboBox scorerSelector;
-    // End of variables declaration//GEN-END:variables
+	// End of variables declaration//GEN-END:variables
 
 	
 	public class ColourRenderer extends JLabel implements TableCellRenderer {

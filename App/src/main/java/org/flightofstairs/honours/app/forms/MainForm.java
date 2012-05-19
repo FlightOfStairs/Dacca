@@ -1,18 +1,18 @@
 package org.flightofstairs.honours.app.forms;
 
-import java.io.File;
-import java.rmi.RemoteException;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.FilenameUtils;
 import org.flightofstairs.honours.app.dialogs.HTMLDialog;
 import org.flightofstairs.honours.app.dialogs.LaunchDialog;
 import org.flightofstairs.honours.app.dialogs.MergeDialog;
 import org.flightofstairs.honours.app.panels.SessionPanel;
 import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tabbedpane.ClosableTabbedPane;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
+import java.rmi.RemoteException;
 
 public class MainForm extends javax.swing.JFrame {
 	public MainForm() {
@@ -36,6 +36,8 @@ public class MainForm extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         toolMenu = new javax.swing.JMenu();
+        infoMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         mergeMenuItem = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         helpMenuItem = new javax.swing.JMenuItem();
@@ -100,6 +102,16 @@ public class MainForm extends javax.swing.JFrame {
         menubar.add(fileMenu);
 
         toolMenu.setText("Tools");
+
+        infoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+        infoMenuItem.setText("Callgraph info");
+        infoMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                infoMenuItemActionPerformed(evt);
+            }
+        });
+        toolMenu.add(infoMenuItem);
+        toolMenu.add(jSeparator3);
 
         mergeMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
         mergeMenuItem.setText("Merge files");
@@ -213,16 +225,23 @@ public class MainForm extends javax.swing.JFrame {
 		(new HTMLDialog(this, "About Dacca", "/About.html")).setVisible(true);
 	}//GEN-LAST:event_aboutMenuItemActionPerformed
 
+	private void infoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoMenuItemActionPerformed
+		if(tabPanel.getSelectedComponent() instanceof SessionPanel)
+			((SessionPanel) tabPanel.getSelectedComponent()).showInfo();
+	}//GEN-LAST:event_infoMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpMenuItem;
+    private javax.swing.JMenuItem infoMenuItem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JMenuBar menubar;
     private javax.swing.JMenuItem mergeMenuItem;
     private javax.swing.JMenuItem newMenuItem;

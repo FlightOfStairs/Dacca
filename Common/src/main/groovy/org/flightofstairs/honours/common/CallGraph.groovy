@@ -4,14 +4,13 @@ package org.flightofstairs.honours.common;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph
 import edu.uci.ics.jung.graph.Graph
 import edu.uci.ics.jung.graph.util.Graphs
-import groovy.transform.Synchronized
 import org.gcontracts.annotations.Ensures
 import org.gcontracts.annotations.Requires
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import java.util.concurrent.CopyOnWriteArraySet
 
 public class CallGraph<V extends Serializable> implements Serializable {
 	
@@ -177,5 +176,21 @@ public class CallGraph<V extends Serializable> implements Serializable {
 		listeners.remove(listener);
 		
 		return true;
+	}
+
+	public int numberOfClasses() { return graph.getVertexCount(); }
+
+	public int numberOfRelations() { return graph.getEdgeCount(); }
+
+	public int numberOfMethods() {
+		synchronized(graphLock.readLock()) {
+			return graph.getEdges().inject(0) { total, item -> total + item.callVariety() }
+		}
+	}
+
+	public int numberOfCalls() {
+		synchronized(graphLock.readLock()) {
+			return graph.getEdges().inject(0) { total, item -> total + item.countAll() }
+		}
 	}
 }
