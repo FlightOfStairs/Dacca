@@ -4,7 +4,7 @@ import org.apache.commons.collections15.Transformer;
 
 public class ScorerFactory {
 	
-	public static Map<String, Closure> scorers = Collections.unmodifiableMap(
+	public static Map<String, Closure> scorers = (Map<String, Closure>) Collections.unmodifiableMap(
 		"Total HITS" : { new HITSScorer(it) },
 		"Weighted HITS" : { new HITSWeighted(it) },
 		"Service Use" : { 

@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-public class CallGraph<V extends Serializable> implements Serializable {
+public class CallGraph implements Serializable {
 	
 	private static final long serialVersionUID = 2L;
 	
@@ -23,11 +23,11 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	private long lastUpdate = 0;
 	private long lastUpdateTest = 0;
 	
-	private final Graph<V, ClassRelation> graph = new DirectedSparseMultigraph<V, ClassRelation>();
+	private final Graph<String, ClassRelation> graph = new DirectedSparseMultigraph<String, ClassRelation>();
 
 	// Using a cached result for our unmodifiableGraph, we can safely share it while still allowing clients to use the
 	// same instance.
-	private transient Graph<V, ClassRelation> unmodifiableGraph;
+	private transient Graph<String, ClassRelation> unmodifiableGraph;
 
 	private transient Set<CallGraphListener> listeners;
 		
@@ -67,7 +67,7 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	
 	@Requires({ other != null })
 	@Ensures({ graph.getVertices().containsAll(other.graph.getVertices()) })
-	public void merge(CallGraph<V> other) {
+	public void merge(CallGraph other) {
 		synchronized(graphLock.writeLock()) {
 
 			for(Call call : other.calls(false))	addCall(call);
@@ -76,7 +76,7 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	}
 	
 	@Ensures({ result != null && result.size() == graph.getVertexCount()})
-	public List<V> classes() {
+	public List<String> classes() {
 		synchronized(graphLock.readLock()) {
 			def results = [];
 			results.addAll graph.getVertices();
@@ -108,7 +108,7 @@ public class CallGraph<V extends Serializable> implements Serializable {
 	}
 	
 	@Ensures({ result != null }) // TODO synchronise?
-	public Graph<V, ClassRelation> getGraph() {
+	public Graph<String, ClassRelation> getGraph() {
 		if(unmodifiableGraph == null)
 			unmodifiableGraph = Graphs.unmodifiableDirectedGraph(graph);
 			
@@ -133,7 +133,7 @@ public class CallGraph<V extends Serializable> implements Serializable {
         LoggerFactory.getLogger(CallGraph.class).debug("Opening callgraph: {}", file);
 
 		file.withObjectInputStream() { instream -> 
-			return instream.readObject();
+			return (CallGraph) instream.readObject();
 		}
 	}
 	

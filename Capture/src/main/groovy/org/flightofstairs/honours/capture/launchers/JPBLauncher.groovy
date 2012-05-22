@@ -1,18 +1,12 @@
 package org.flightofstairs.honours.capture.launchers;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.jar.JarInputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.flightofstairs.honours.capture.recorder.RMIRecorder;
 import org.flightofstairs.honours.capture.recorder.UNCCompatibleJavaProcessBuilder
-import org.gcontracts.annotations.Requires;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+import java.util.jar.JarInputStream
+import java.util.logging.Level
 
 public class JPBLauncher implements Launcher {
 	@Override

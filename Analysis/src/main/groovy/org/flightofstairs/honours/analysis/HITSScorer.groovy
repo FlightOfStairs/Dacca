@@ -9,7 +9,7 @@ import org.flightofstairs.honours.common.CallGraph;
 
 import org.gcontracts.annotations.*
 
-public class HITSScorer<V extends Serializable> implements ClassScorer {
+public class HITSScorer implements ClassScorer {
 	
 	Transformer<HITS.Scores, Double> scoreExtractor = { it.authority + it.hub } as Transformer;
 	
@@ -17,17 +17,17 @@ public class HITSScorer<V extends Serializable> implements ClassScorer {
 
 	private final CallGraph callGraph;
 	
-	public HITSScorer(CallGraph<String> callGraph) {
+	public HITSScorer(CallGraph callGraph) {
 		this.callGraph = callGraph;
 	}
 
 
 
 	@Ensures({ result.keySet().containsAll(callGraph.classes()) })
-	public Map<V, Double> rank() {
+	public Map<String, Double> rank() {
 		def results = [:]
 		
-		Graph<V, ?> graph = callGraph.getGraph();
+		Graph<String, ?> graph = callGraph.getGraph();
 		
 		def hits = new HITS(graph, ALPHA);
 		

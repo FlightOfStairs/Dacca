@@ -2,8 +2,6 @@ package org.flightofstairs.honours.common;
 
 import groovy.transform.Immutable;
 
-import java.io.Serializable;
-
 @Immutable
 public class Call implements Serializable {
 	

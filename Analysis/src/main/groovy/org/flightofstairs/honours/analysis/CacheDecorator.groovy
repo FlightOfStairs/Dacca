@@ -8,17 +8,17 @@ import groovy.transform.Synchronized
 
 import org.gcontracts.annotations.*
 
-public class CacheDecorator<V extends Serializable> implements ClassScorer {
-	private final CallGraph<V> callGraph;
+public class CacheDecorator implements ClassScorer {
+	private final CallGraph callGraph;
 	
-	private final ClassScorer<V> delegate;
+	private final ClassScorer delegate;
 	
 	private final Object cacheLock = new Object();
 	
-	private Map<V, Double> cache;
+	private Map<String, Double> cache;
 	
 	@Requires({ callGraph != null && delegate != null && ! (delegate instanceof CacheDecorator) })
-	public CacheDecorator(CallGraph<V> callGraph, ClassScorer<V> delegate) {
+	public CacheDecorator(CallGraph callGraph, ClassScorer delegate) {
 		this.callGraph = callGraph;
 		this.delegate = delegate;
 		
@@ -27,7 +27,7 @@ public class CacheDecorator<V extends Serializable> implements ClassScorer {
 
 	@Ensures({ result.keySet().containsAll(callGraph.classes()) })
 	@Synchronized("cacheLock")
-	public Map<V, Double> rank() {
+	public Map<String, Double> rank() {
 		if(cache != null) return cache;
 		
 		if(! delegate instanceof CacheDecorator) {

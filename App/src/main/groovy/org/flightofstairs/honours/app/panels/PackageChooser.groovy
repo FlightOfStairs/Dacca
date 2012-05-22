@@ -1,34 +1,24 @@
 package org.flightofstairs.honours.app.panels
 
-import java.util.jar.JarFile;
-
-import java.util.List;
-
-import javax.swing.JScrollPane;
-import java.awt.Dimension;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.awt.BorderLayout;
-
-import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree;
-import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel;
-import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingListener;
-
-import org.slf4j.Logger
+import groovy.transform.Synchronized
+import it.cnr.imaa.essi.lablib.gui.checkboxtree.CheckboxTree
+import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingListener
+import it.cnr.imaa.essi.lablib.gui.checkboxtree.TreeCheckingModel
+import org.gcontracts.annotations.Ensures
+import org.gcontracts.annotations.Requires
 import org.slf4j.LoggerFactory
 
-import org.gcontracts.annotations.*
-import groovy.transform.Synchronized
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
+import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
 
 class PackageChooser extends CheckboxTree {
-	private final DefaultTreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode("Packages"));
+	private final DefaultTreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode("Packages"))
 		
-	private final List<NotificationListener> listeners = [];
+	private final List<NotificationListener> listeners = []
 	
-	private final TreeCheckingListener treeCheckingListener = { notifyListeners() } as TreeCheckingListener;
+	private final TreeCheckingListener treeCheckingListener = { notifyListeners() } as TreeCheckingListener
 	
 	public PackageChooser() {
 		super();
@@ -176,14 +166,14 @@ class PackageChooser extends CheckboxTree {
 	
 	@Ensures({ result != null})
 	private List<String> getExpandedPackages() {
-		def paths = getPackages().collect { new TreePath(pathFrom(model.getRoot(), it.split(".") as List<String>)) }
+		def paths = getPackages().collect { new TreePath(pathFrom(model.getRoot(), it.tokenize(".") as List<String>)) }
 		
 		return paths.findAll({ isExpanded(it) })*.join(".");
 	}
 	
 	@Ensures({ result != null})
 	private List<String> setExpandedPackages(List<String> packages) {
-		def paths = packages.collect { new TreePath(pathFrom(model.getRoot(), it.split(".") as List<String>)) }
+		def paths = packages.collect { new TreePath(pathFrom(model.getRoot(), it.tokenize(".") as List<String>)) }
 		
 		paths.each {
 			expandPath(it)

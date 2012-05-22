@@ -1,47 +1,39 @@
 package org.flightofstairs.honours.display;
 
-import java.awt.Dimension;
-import java.awt.BorderLayout;
-import java.awt.Rectangle;
-import java.awt.Color;
-import javax.swing.JPanel;
-import java.awt.BasicStroke;
 
-import org.flightofstairs.honours.display.components.*;
+import edu.uci.ics.jung.algorithms.layout.AbstractLayout
+import edu.uci.ics.jung.algorithms.layout.FRLayout2
+import edu.uci.ics.jung.algorithms.layout.Layout
+import edu.uci.ics.jung.algorithms.layout.StaticLayout
+import edu.uci.ics.jung.algorithms.layout.util.Relaxer
+import edu.uci.ics.jung.algorithms.layout.util.VisRunner
+import edu.uci.ics.jung.algorithms.util.IterativeContext
+import edu.uci.ics.jung.visualization.RenderContext
+import edu.uci.ics.jung.visualization.VisualizationViewer
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse
+import edu.uci.ics.jung.visualization.decorators.EdgeShape
+import edu.uci.ics.jung.visualization.layout.LayoutTransition
+import edu.uci.ics.jung.visualization.renderers.Renderer
+import edu.uci.ics.jung.visualization.util.Animator
+import org.apache.commons.collections15.Predicate
+import org.apache.commons.collections15.PredicateUtils
+import org.apache.commons.collections15.Transformer
+import org.flightofstairs.honours.analysis.CacheDecorator
+import org.flightofstairs.honours.analysis.ClassScorer
+import org.flightofstairs.honours.analysis.RankDecorator
+import org.flightofstairs.honours.common.CallGraph
+import org.flightofstairs.honours.common.CallGraphListener
+import org.flightofstairs.honours.common.ExclusiveGraphUser
+import org.flightofstairs.honours.display.selection.SelectedClassModel
+import org.flightofstairs.honours.display.selection.SelectionChangeListener
+import org.gcontracts.annotations.Invariant
+import org.gcontracts.annotations.Requires
 
-import edu.uci.ics.jung.visualization.decorators.EdgeShape;
-import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
-import edu.uci.ics.jung.algorithms.layout.FRLayout2;
-import edu.uci.ics.jung.algorithms.layout.*;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.renderers.Renderer;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.algorithms.layout.util.Relaxer;
-import edu.uci.ics.jung.visualization.layout.LayoutTransition;
-import edu.uci.ics.jung.visualization.util.Animator;
-import edu.uci.ics.jung.algorithms.layout.util.VisRunner;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
-import edu.uci.ics.jung.visualization.RenderContext;
+import javax.swing.JPanel
 
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.TransformerUtils;
-import org.apache.commons.collections15.Predicate;
-import org.apache.commons.collections15.PredicateUtils;
+import org.flightofstairs.honours.display.components.*
 
-import org.flightofstairs.honours.common.CallGraph;
-import org.flightofstairs.honours.common.ExclusiveGraphUser;
-import org.flightofstairs.honours.common.CallGraphListener;
-import org.flightofstairs.honours.analysis.ClassScorer;
-import org.flightofstairs.honours.analysis.CacheDecorator;
-import org.flightofstairs.honours.analysis.RankDecorator;
-import org.flightofstairs.honours.display.selection.SelectedClassModel;
-import org.flightofstairs.honours.display.selection.SelectionChangeListener;
-
-import java.util.logging.Logger;
-
-import org.gcontracts.annotations.*
+import java.awt.*
 
 @Invariant({
 		graphLayout != null &&
@@ -64,10 +56,10 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	public static final float SELECTED_EDGE_WIDTH = 2f;
 	public static final float NEAR_EDGE_WIDTH = 1.5f
 	
-	private final CallGraph<V> callGraph;
+	private final CallGraph callGraph;
 	
-	private final AbstractLayout<V, ?> graphLayout;
-	private final VisualizationViewer<V, ?> viewer;
+	private final AbstractLayout<String, ?> graphLayout;
+	private final VisualizationViewer<String, ?> viewer;
 	
 	private ClassScorer scorer;
 	
@@ -75,7 +67,7 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	
 	public final SelectedClassModel selectionModel = new SelectedClassModel();
 	
-	public GraphPanel(CallGraph<V> callGraph, ClassScorer scorer) {
+	public GraphPanel(CallGraph callGraph, ClassScorer scorer) {
 		super();
 		
 		this.callGraph = callGraph;
@@ -155,19 +147,21 @@ public class GraphPanel<V extends Serializable> extends JPanel {
 	private void refreshTransformers() {
 		RenderContext context = viewer.getRenderContext();
 		
-		context.setVertexIncludePredicate(PredicateUtils.orPredicate(
+		context.setVertexIncludePredicate((Predicate) PredicateUtils.orPredicate(
 				{ isConnectedToSelected(it.element) } as Predicate,
 				new HidePredicate(callGraph, scorer, viewer.getRenderContext(), 0.20)
 			))
 		
 		context.setVertexFillPaintTransformer({
 				if(! packageFilter.evaluate(it)) return HIDDEN_COLOUR;
-				
+
 				try {
 					def greenNess = (int) (255 * scorer.rank()[it])
 					return new Color(100, 255, 100, greenNess)
-				} catch(all) { }
-				return Color.white
+				} catch(all) {
+					return Color.white
+				}
+
 			} as Transformer)
 		
 		def hidePredicate = PredicateUtils.orPredicate(

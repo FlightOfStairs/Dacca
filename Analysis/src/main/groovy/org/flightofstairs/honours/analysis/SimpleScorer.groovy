@@ -1,12 +1,9 @@
 package org.flightofstairs.honours.analysis
 
 import edu.uci.ics.jung.graph.Graph
-
-import org.apache.commons.collections15.Transformer;
-
 import org.flightofstairs.honours.common.CallGraph
 
-import org.gcontracts.annotations.*
+import org.gcontracts.annotations.Ensures
 
 public class SimpleScorer<V extends Serializable> implements ClassScorer {
 	
@@ -15,7 +12,7 @@ public class SimpleScorer<V extends Serializable> implements ClassScorer {
 	private final CallGraph callGraph;
 	
 	@Ensures({ this.callGraph != null })
-	public SimpleScorer(CallGraph<String> callGraph) {
+	public SimpleScorer(CallGraph callGraph) {
 		this.callGraph = callGraph;
 	}
 

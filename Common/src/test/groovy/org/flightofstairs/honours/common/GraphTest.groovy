@@ -14,7 +14,7 @@ class GraphTest extends GroovyTestCase {
 	}
 	
 	void testLoadSave() {
-		CallGraph<String> g = new CallGraph<String>();
+		CallGraph g = new CallGraph();
 		
 		[
 			new Call("a", "b", "1"),
@@ -28,14 +28,14 @@ class GraphTest extends GroovyTestCase {
 		
 		g.save(file);
 		
-		CallGraph<String> loaded = CallGraph.open(file);
+		CallGraph loaded = CallGraph.open(file);
 		
 		assertEquals(5, loaded.calls().size());
 		assertEquals(4, loaded.classes().size());
 	}
 	
 	void testEdges() {
-		CallGraph<String> g = new CallGraph<String>();
+		CallGraph g = new CallGraph();
 		
 		[
 			new Call("a", "b", "1"),
@@ -67,7 +67,7 @@ class GraphTest extends GroovyTestCase {
 	}
 	
 	void testGraph() {
-		CallGraph<String> g = new CallGraph<String>();
+		CallGraph g = new CallGraph();
 		
 		[
 			new Call("a", "b", "1"),
@@ -86,8 +86,8 @@ class GraphTest extends GroovyTestCase {
 	}
 	
 	void testMerge() {
-		CallGraph<String> a = new CallGraph<String>();
-		CallGraph<String> b = new CallGraph<String>();
+		CallGraph a = new CallGraph();
+		CallGraph b = new CallGraph();
 		
 		[
 			new Call("a", "b", "1"),

@@ -1,17 +1,15 @@
 package org.flightofstairs.honours.display.components
 
-import java.awt.Shape;
-import java.awt.Rectangle;
-import java.awt.geom.RoundRectangle2D;
-
-import org.flightofstairs.honours.display.selection.SelectedClassModel;
-import edu.uci.ics.jung.visualization.RenderContext;
-
+import edu.uci.ics.jung.visualization.RenderContext
 import org.apache.commons.collections15.Transformer
+import org.flightofstairs.honours.display.selection.SelectedClassModel
+import org.gcontracts.annotations.Ensures
+import org.gcontracts.annotations.Requires
 
-import org.gcontracts.annotations.*
+import java.awt.Shape
+import java.awt.geom.RoundRectangle2D
 
-class TextFitShape<V> implements Transformer {
+class TextFitShape implements Transformer {
 	
 	public static final int MARGIN = 2;
 	
@@ -25,10 +23,10 @@ class TextFitShape<V> implements Transformer {
 	
 	@Requires({ vertex != null })
 	@Ensures({ result != null })
-	public Shape transform(V vertex) {
+	public Shape transform(Object vertex) {
 		def stringTransformer = context.getVertexLabelTransformer();
 		
-		int width = context.getGraphicsContext().getFontMetrics().stringWidth(stringTransformer.transform(vertex)) + MARGIN * 2;
+		int width = context.getGraphicsContext().getFontMetrics().stringWidth((String) stringTransformer.transform(vertex)) + MARGIN * 2;
 		int height = context.getGraphicsContext().getFontMetrics().getHeight() + MARGIN * 2;
 		
 		return new RoundRectangle2D.Double((double) (- width / 2), (double) (- height / 2), (double) width, (double) height, 5, 5)

@@ -77,11 +77,25 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
     </plugins>
   </build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>codenarc-maven-plugin</artifactId>
+                <version>0.17-1</version>
+                <configuration>
+                    <sourceDirectory>src/main/groovy/</sourceDirectory>
+                    <rulesetfiles>rulesets/junit.xml,rulesets/concurrency.xml,rulesets/serialization.xml,rulesets/exceptions.xml,rulesets/imports.xml,rulesets/dry.xml,rulesets/formatting.xml,rulesets/unused.xml,rulesets/jdbc.xml,rulesets/design.xml,rulesets/generic.xml,rulesets/basic.xml,rulesets/groovyism.xml,rulesets/logging.xml,rulesets/convention.xml,rulesets/security.xml,rulesets/naming.xml</rulesetfiles>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
   <dependencies>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
-      <version>1.8.0</version>
+      <version>1.8.6</version>
     </dependency>
     <dependency>
       <groupId>org.gcontracts</groupId>

@@ -1,14 +1,10 @@
 package org.flightofstairs.honours.analysis
 
-import edu.uci.ics.jung.graph.Graph
 import edu.uci.ics.jung.algorithms.scoring.HITS
-
-import org.apache.commons.collections15.Transformer;
-
-import org.flightofstairs.honours.common.CallGraph;
-import org.flightofstairs.honours.common.ClassRelation;
-
-import org.gcontracts.annotations.*
+import edu.uci.ics.jung.graph.Graph
+import org.apache.commons.collections15.Transformer
+import org.flightofstairs.honours.common.CallGraph
+import org.gcontracts.annotations.Ensures
 
 public class HITSWeighted<V extends Serializable> implements ClassScorer {
 	
@@ -18,7 +14,7 @@ public class HITSWeighted<V extends Serializable> implements ClassScorer {
 	
 	private final CallGraph callGraph;
 	
-	public HITSWeighted(CallGraph<String> callGraph) {
+	public HITSWeighted(CallGraph callGraph) {
 		this.callGraph = callGraph;
 	}
 
@@ -33,7 +29,7 @@ public class HITSWeighted<V extends Serializable> implements ClassScorer {
 		hits.evaluate();
 		
 		callGraph.classes().each {
-			results[it] = scoreExtractor.transform(hits.getVertexScore(it));
+			results[it] = scoreExtractor.transform((HITS.Scores) hits.getVertexScore(it))
 		}
 		
 		return results;

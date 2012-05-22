@@ -1,11 +1,9 @@
 package org.flightofstairs.honours.display.components
 
-import java.awt.Shape;
-
+import org.apache.commons.collections15.Predicate
 import org.apache.commons.collections15.Transformer
-import org.apache.commons.collections15.Predicate;
-
-import org.gcontracts.annotations.*
+import org.gcontracts.annotations.Ensures
+import org.gcontracts.annotations.Requires
 
 class HideTransformers<V, R> implements Transformer {
 	private final Predicate<V> predicate;
@@ -21,7 +19,8 @@ class HideTransformers<V, R> implements Transformer {
 	
 	@Requires({ vertex != null })
 	@Ensures({ result != null })
-	public R transform(V vertex) {
+	public R transform(Object vertex) {
+		vertex = (V) vertex;
 		return predicate.evaluate(vertex) ? visible.transform(vertex) : hidden.transform(vertex);
 	}
 }

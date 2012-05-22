@@ -1,11 +1,10 @@
 package org.flightofstairs.honours.app.dialogs;
 
-import java.io.File;
-import javax.swing.DefaultListModel;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import org.flightofstairs.honours.common.CallGraph;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 
 public class MergeDialog extends javax.swing.JDialog {
 	
@@ -157,7 +156,7 @@ public class MergeDialog extends javax.swing.JDialog {
 		final int ret = fileChooser.showSaveDialog(this);
 		if(ret != JFileChooser.APPROVE_OPTION) return;
 		
-		final CallGraph<String> target = new CallGraph<String>();
+		final CallGraph target = new CallGraph();
 		
 		for(int i = 0; i < listModel.size(); i++) {
 			target.merge(CallGraph.open((File) listModel.get(i)));

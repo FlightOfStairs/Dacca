@@ -1,5 +1,13 @@
 package org.flightofstairs.honours.capture.recorder;
 
+import org.flightofstairs.honours.capture.launchers.JPBLauncher;
+import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
+import org.flightofstairs.honours.capture.launchers.Launcher;
+import org.flightofstairs.honours.capture.producer.AspectBuilder;
+import org.flightofstairs.honours.common.Call;
+import org.flightofstairs.honours.common.CallGraph;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,13 +21,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.flightofstairs.honours.capture.launchers.JPBLauncher;
-import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
-import org.flightofstairs.honours.capture.launchers.Launcher;
-import org.flightofstairs.honours.capture.producer.AspectBuilder;
-import org.flightofstairs.honours.common.CallGraph;
-import org.flightofstairs.honours.common.Call;
-import org.slf4j.LoggerFactory;
 
 public class RMIRecorder extends UnicastRemoteObject implements Recorder, RemoteRecorder {
 	
@@ -31,7 +32,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	
 	public int port;
 	
-	private final CallGraph<String> graph = new CallGraph<String>();
+	private final CallGraph graph = new CallGraph();
 		
 	public RMIRecorder(LaunchConfiguration launchConfig) throws RemoteException {
 		super();
@@ -56,7 +57,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 			
 			AspectBuilder builder = new AspectBuilder(launchConfig.packages());
 			File aspectClass = builder.compileAspect();
-						
+
 			LaunchConfiguration rmiConfig = new RMILaunchConfig(launchConfig, port, aspectClass.getAbsolutePath());
 			
 			launcher.launch(rmiConfig);
