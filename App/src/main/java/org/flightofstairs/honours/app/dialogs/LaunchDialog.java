@@ -1,14 +1,15 @@
 
 package org.flightofstairs.honours.app.dialogs;
 
-import java.io.File;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import org.flightofstairs.honours.app.panels.PackageChooser;
 import org.flightofstairs.honours.app.panels.JARUtils;
-import org.flightofstairs.honours.capture.launchers.BaseLaunchConfiguration;
-import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
+import org.flightofstairs.honours.app.panels.PackageChooser;
+import org.flightofstairs.honours.capture.sources.JARSource;
+import org.flightofstairs.honours.capture.sources.Source;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
+import java.util.Arrays;
 
 public class LaunchDialog extends javax.swing.JDialog {
 
@@ -182,14 +183,15 @@ public class LaunchDialog extends javax.swing.JDialog {
 		return launched;
 	}
 	
-	public LaunchConfiguration getLaunchConfiguration() {
-		if(!launched()) throw new IllegalStateException("Launch configuration useless without "); 
-		
-		return new BaseLaunchConfiguration(
+	public Source getLaunchConfiguration() {
+		if(!launched()) throw new IllegalStateException("Launch configuration useless without info.");
+
+		return new JARSource(
 				new File(jarPath.getText()),
-				jvmArgumentsField.getText(),
-				programArgumentsField.getText(),
-				((PackageChooser) packageChooser).getSelectedPackages());
+				((PackageChooser) packageChooser).getSelectedPackages(),
+				Arrays.asList(programArgumentsField.getText().split(" ")),
+				Arrays.asList(jvmArgumentsField.getText().split(" "))
+				);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

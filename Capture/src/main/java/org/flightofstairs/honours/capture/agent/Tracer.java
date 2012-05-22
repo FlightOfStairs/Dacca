@@ -1,7 +1,10 @@
 package org.flightofstairs.honours.capture.agent;
 
+import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
+import org.flightofstairs.honours.common.Call;
+import org.slf4j.LoggerFactory;
+
 import java.rmi.ConnectException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -10,14 +13,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
-import org.flightofstairs.honours.common.Call;
 
 public enum Tracer {
 	INSTANCE;
-	
 
-	public static final int SUBMIT_DELAY = 50;
+	public static final long RECONNECT_DELAY = 500;
+	public static final int MAX_CONNECT_ATTEMPTS = 10;
+
+	public static final long SUBMIT_DELAY = 50;
 	
 	public static final int MAX_WAITING = 50000;
 	
@@ -27,21 +30,35 @@ public enum Tracer {
 	
 	private final RemoteRecorder recorder;
 	
-	private Tracer() throws ExceptionInInitializerError {		
-		try {
-			int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
-			
-			Registry registry = LocateRegistry.getRegistry(port);
+	private Tracer() throws ExceptionInInitializerError {
 
-			recorder = (RemoteRecorder) registry.lookup("Recorder");
-		} catch (NumberFormatException  ex) {
-			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
-		} catch (RemoteException ex) {
-			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
-		} catch (NotBoundException ex) {
+		int connectionAttempts = 0;
+
+		RemoteRecorder recorder = null;
+
+		while(MAX_CONNECT_ATTEMPTS > connectionAttempts++) {
+			try {
+				int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
+
+				Registry registry = LocateRegistry.getRegistry(port);
+				recorder = (RemoteRecorder) registry.lookup("Recorder");
+
+				break;
+			} catch(Exception e) {
+				LoggerFactory.getLogger(getClass()).warn("Connecting to Dacca failed... retrying.", e);
+
+				try { Thread.sleep(RECONNECT_DELAY); }
+				catch (InterruptedException ex) { LoggerFactory.getLogger(getClass()).warn("Tracer retry wait interrupted.", ex); }
+			}
+		}
+
+		if(recorder == null) {
+			LoggerFactory.getLogger(getClass()).error("Error initializing tracker.");
 			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
 		}
-		
+
+		this.recorder = recorder;
+
 		initSubmit();
 		initShutdown();
 	}
@@ -54,14 +71,8 @@ public enum Tracer {
 	
 	private void initShutdown() {
 		Thread thread = new Thread() {
-			@Override
-			public void run() {
-				try {
-					submit();
-					
-					recorder.end();
-				} catch (RemoteException ex) {
-				}
+			@Override public void run() {
+				submit();
 			}
 		};
 

@@ -1,20 +1,6 @@
 
 package org.flightofstairs.honours.app.panels;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.io.File;
-import java.rmi.RemoteException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.TableCellRenderer;
 import org.flightofstairs.honours.analysis.CacheDecorator;
 import org.flightofstairs.honours.analysis.ClassScorer;
 import org.flightofstairs.honours.analysis.RankDecorator;
@@ -22,15 +8,26 @@ import org.flightofstairs.honours.analysis.ScorerFactory;
 import org.flightofstairs.honours.app.dialogs.CallGraphInfoDialog;
 import org.flightofstairs.honours.app.dialogs.OverrideFileChooser;
 import org.flightofstairs.honours.app.table.ClassTableModel;
-import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
 import org.flightofstairs.honours.capture.recorder.RMIRecorder;
 import org.flightofstairs.honours.capture.recorder.Recorder;
+import org.flightofstairs.honours.capture.sources.Source;
 import org.flightofstairs.honours.common.CallGraph;
 import org.flightofstairs.honours.common.CallGraphListener;
 import org.flightofstairs.honours.display.GraphPanel;
-
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.TableCellRenderer;
+import java.awt.*;
+import java.io.File;
+import java.rmi.RemoteException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SessionPanel extends javax.swing.JPanel {
 	
@@ -46,28 +43,21 @@ public class SessionPanel extends javax.swing.JPanel {
 	private ClassTableModel tableModel;
 	private ClassScorer scorer;
 
-	public SessionPanel(final LaunchConfiguration launchConfig) throws RemoteException {
+	public SessionPanel(final Source source) throws RemoteException {
 		
-		final Recorder recorder = new RMIRecorder(launchConfig);
+		final Recorder recorder = new RMIRecorder(source);
 		
 		this.callGraph = recorder.getResults();
 
-		name = launchConfig.getJARFile().getName();
+		name = source.getName();
 
 		startInit();		
 		initComponents();
 		endInit();
-		
-		((PackageChooser) packageChooser).updateClassList(JARUtils.classesInJarFile(launchConfig.getJARFile()));
-		
+
 		ExecutorService service = Executors.newSingleThreadExecutor();
 		
-		service.submit(new Runnable() {
-			@Override
-			public void run() {
-				recorder.recordSession();
-			}
-		});
+		service.submit(recorder);
 		
 		callGraph.addListener(new CallGraphListener() {
 			@Override
@@ -75,8 +65,6 @@ public class SessionPanel extends javax.swing.JPanel {
 				((PackageChooser) packageChooser).updateClassList(callGraph.classes());
 			}
 		});
-
-
 	}
 	
 	public SessionPanel(File callGraphFile) {
@@ -92,7 +80,7 @@ public class SessionPanel extends javax.swing.JPanel {
 
 		((PackageChooser) packageChooser).updatePackageList(callGraph.classes());
 	}
-	
+
 	public void closing() {
 		int saveDialogResult = JOptionPane.showConfirmDialog(this, "Save graph before closing?", "Save graph?",JOptionPane.YES_NO_OPTION);
 		

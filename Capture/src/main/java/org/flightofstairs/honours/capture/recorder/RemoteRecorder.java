@@ -7,7 +7,5 @@ import java.rmi.RemoteException;
 import java.util.Map;
 
  public interface RemoteRecorder extends Remote {
-	public void end() throws RemoteException;
-
 	public void addCallCounts(Map<Call, Integer> callCounts) throws RemoteException;
 }

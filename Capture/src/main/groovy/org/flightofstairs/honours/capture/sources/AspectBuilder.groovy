@@ -1,10 +1,9 @@
-package org.flightofstairs.honours.capture.producer
+package org.flightofstairs.honours.capture.sources
 
-import org.aspectj.tools.ajc.Main;
-
-import com.google.common.io.Files;
-
-import org.gcontracts.annotations.*
+import com.google.common.io.Files
+import org.gcontracts.annotations.Ensures
+import org.gcontracts.annotations.Invariant
+import org.gcontracts.annotations.Requires
 
 @Invariant({ code != null && code.length() != 0 })
 public class AspectBuilder {

@@ -5,7 +5,7 @@ import org.flightofstairs.honours.app.dialogs.HTMLDialog;
 import org.flightofstairs.honours.app.dialogs.LaunchDialog;
 import org.flightofstairs.honours.app.dialogs.MergeDialog;
 import org.flightofstairs.honours.app.panels.SessionPanel;
-import org.flightofstairs.honours.capture.launchers.LaunchConfiguration;
+import org.flightofstairs.honours.capture.sources.Source;
 import org.slf4j.LoggerFactory;
 import tabbedpane.ClosableTabbedPane;
 
@@ -251,12 +251,9 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JMenu toolMenu;
     // End of variables declaration//GEN-END:variables
 
-	public void launch(final LaunchConfiguration launchConfig) {
-		LoggerFactory.getLogger(MainForm.class).debug("Launching jar: {}", launchConfig.getJARFile());
-		
+	public void launch(final Source source) {
 		try {
-			tabPanel.addTab(launchConfig.getJARFile().getName(),
-								new SessionPanel(launchConfig));
+			tabPanel.addTab(source.getName(), new SessionPanel(source));
 
 			tabPanel.setSelectedIndex(tabPanel.getTabCount() - 1);
 
