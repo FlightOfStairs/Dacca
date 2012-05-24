@@ -1,58 +1,66 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.flightofstairs.dacca</groupId>
-  <artifactId>Capture</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>Capture</name>
-
-  <parent>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <groupId>org.flightofstairs.dacca</groupId>
-    <artifactId>Parent</artifactId>
+    <artifactId>Capture</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <relativePath>../Parent</relativePath>
-  </parent>
+    <name>Capture</name>
 
-  <dependencies>
-	<dependency>
-      <groupId>org.flightofstairs.dacca</groupId>
-      <artifactId>Common</artifactId>
-      <version>1.0-SNAPSHOT</version>
-    </dependency>
-	  
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjrt</artifactId>
-      <version>1.6.11</version>
-    </dependency>
-	<dependency>
-		<groupId>org.aspectj</groupId>
-		<artifactId>aspectjtools</artifactId>
-		<version>1.6.12</version>
-	</dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.6.12</version>
-    </dependency>
-	
-	<dependency>
-		<groupId>jlibs</groupId>
-		<artifactId>jlibs-jdbc</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</dependency>
-	
-	<dependency>
-		<groupId>com.google.guava</groupId>
-		<artifactId>guava</artifactId>
-		<version>10.0.1</version>
-	</dependency>
-  </dependencies>
-  
-  <repositories>
-    <repository>
-      <id>jlibs</id>
-      <url>http://flightofstairs.org/nexus/content/repositories/jlibs/</url>
-    </repository>
-  </repositories>
+    <parent>
+        <groupId>org.flightofstairs.dacca</groupId>
+        <artifactId>Parent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../Parent</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.flightofstairs.dacca</groupId>
+            <artifactId>Common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.6.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>1.6.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.6.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jlibs</groupId>
+            <artifactId>jlibs-jdbc</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>10.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+            <version>5.2</version>
+        </dependency>
+
+    </dependencies>
+
+
+    <repositories>
+        <repository>
+            <id>jlibs</id>
+            <url>http://flightofstairs.org/nexus/content/repositories/jlibs/</url>
+        </repository>
+    </repositories>
 </project>
