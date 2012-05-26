@@ -19,8 +19,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 	      <mainClass>org.flightofstairs.honours.app.forms.MainForm</mainClass>
 	    </manifest>
 	    <manifestEntries>
-	      <Premain-Class>org.aspectj.weaver.loadtime.Agent</Premain-Class>
+	      <Premain-Class>org.flightofstairs.honours.capture.agent.Agent</Premain-Class>
 	      <Can-Redefine-Classes>true</Can-Redefine-Classes>
+          <Can-Retransform-Classes>true</Can-Retransform-Classes>
 	    </manifestEntries>
 	  </archive>
 	</configuration>

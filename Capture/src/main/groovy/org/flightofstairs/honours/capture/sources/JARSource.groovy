@@ -1,17 +1,12 @@
 package org.flightofstairs.honours.capture.sources
 
 import jlibs.core.lang.JavaProcessBuilder
-import org.aspectj.weaver.loadtime.Agent
-
+import org.flightofstairs.honours.capture.agent.Agent
+import org.flightofstairs.honours.capture.recorder.RMIRecorder
 import org.gcontracts.annotations.Requires
 import org.slf4j.LoggerFactory
 
-import java.util.concurrent.Callable
-import java.util.concurrent.Future
-import java.util.concurrent.FutureTask
 import java.util.jar.JarInputStream
-
-import org.flightofstairs.honours.capture.recorder.RMIRecorder
 
 public class JARSource implements Source {
 
@@ -21,8 +16,6 @@ public class JARSource implements Source {
 
 	private final List<String> programArgs
 	private final List<String> jvmArgs
-
-	private final Future<File> aspectFuture
 
 	@Requires({ jarFile != null && packages != null && programArgs != null && jvmArgs != null })
 	public JARSource(final File jarFile, final List<String> packages,
@@ -34,18 +27,6 @@ public class JARSource implements Source {
 
 		this.programArgs = new LinkedList<String>(programArgs)
 		this.jvmArgs = new LinkedList<String>(jvmArgs)
-
-
-		FutureTask aspectFuture = new FutureTask<File>({
-			LoggerFactory.getLogger(this.class).debug("Getting a future builder for {}", this.packages);
-
-			AspectBuilder builder = new AspectBuilder(this.packages);
-			return builder.compileAspect();
-		} as Callable<File>);
-
-		(new Thread(aspectFuture)).run();
-
-		this.aspectFuture = aspectFuture;
 	}
 
 	@Override public String getName() { return jarFile.getName(); }
@@ -64,7 +45,7 @@ public class JARSource implements Source {
 		// Use the aspectj weaver as a java agent.
 		String weaverPath = getWeaverFile().getAbsolutePath();
 		LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaverPath);
-		jpb.jvmArg("-javaagent:" + weaverPath);
+		jpb.jvmArg("-javaagent:" + weaverPath + "=orrery,CH"); // TODO fix
 
 		jpb.jvmArg("-Dorg.flightofstairs.honours.capture.port=" + port);
 
@@ -73,8 +54,6 @@ public class JARSource implements Source {
 
 		jpb.classpath(jarFile.getAbsoluteFile())
 		jpb.mainClass(main)
-
-		jpb.classpath(aspectFuture.get().getAbsoluteFile())
 
 		LoggerFactory.getLogger(JARSource.class).info("Launching traced application: {}", jpb.command().toString())
 

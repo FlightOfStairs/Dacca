@@ -25,10 +25,21 @@ public enum Tracer {
 	public static final int MAX_WAITING = 50000;
 	
 	public final AtomicInteger waiting = new AtomicInteger(0);
-	
+
+	public final Probes probes = new Probes();
+
 	private final Queue<Call> toSend = new ConcurrentLinkedQueue<Call>();
-	
+
 	private final RemoteRecorder recorder;
+
+	public void probe(Integer probeID) {
+		INSTANCE.traceCall(INSTANCE.probes.getCallFromID(probeID));
+		LoggerFactory.getLogger(Tracer.class).debug("Logged call " + INSTANCE.probes.getCallFromID(probeID).toString());
+	}
+
+	public void probe(Class clazz) {
+		LoggerFactory.getLogger(Tracer.class).debug("Class ${clazz}");
+	}
 	
 	private Tracer() throws ExceptionInInitializerError {
 
