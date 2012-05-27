@@ -1,7 +1,5 @@
 package org.flightofstairs.honours.capture.agent
 
-import org.flightofstairs.honours.common.Call
-import org.objectweb.asm.Frame
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -14,29 +12,29 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.MethodNode
 import org.objectweb.asm.tree.analysis.Analyzer
 import org.objectweb.asm.tree.analysis.AnalyzerException
+import org.objectweb.asm.tree.analysis.Frame
 import org.objectweb.asm.tree.analysis.SourceInterpreter
 import org.objectweb.asm.tree.analysis.SourceValue
 import org.slf4j.LoggerFactory
 
 class MethodWeaver extends MethodNode implements Opcodes {
 
-	private final String owner
+	private final String className
 	private final MethodVisitor mv
 
 	private final ArrayList<MethodInsnNode> calls = new ArrayList<MethodInsnNode>();
 
-	MethodWeaver(String owner, int access, String name, String desc,
-	                                                          String signature, String[] exceptions, MethodVisitor mv) {
-		super(access, name, desc, signature, exceptions);
-		this.owner = owner;
+	MethodWeaver(String className, int access, String methodName, String desc, String signature, String[] exceptions, MethodVisitor mv) {
+		super(access, methodName, desc, signature, exceptions);
+		this.className = className;
 		this.mv = mv;
 	}
 
 	@Override
 	void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
 
-		if(opcode == INVOKEVIRTUAL) {
-			int probeID = Tracer.INSTANCE.probes.createProbeIDAt(new Call(owner, name, desc))
+		if(opcode == INVOKESPECIAL || opcode == INVOKESTATIC) {
+			int probeID = Tracer.INSTANCE.probes.createProbeIDAt(new InternalCall(className, owner, name, desc))
 
 			super.visitFieldInsn(GETSTATIC, "org/flightofstairs/honours/capture/agent/Tracer", "INSTANCE", "Lorg/flightofstairs/honours/capture/agent/Tracer;")
 			super.visitLdcInsn(probeID)
@@ -45,26 +43,23 @@ class MethodWeaver extends MethodNode implements Opcodes {
 
 		super.visitMethodInsn(opcode, owner, name, desc);
 
-		if(opcode==INVOKEINTERFACE) {
+		if(opcode==INVOKEINTERFACE || opcode == INVOKEVIRTUAL)
 			calls.add((MethodInsnNode) instructions.getLast());
-		}
-
-
 	}
 
 	@Override
 	public void visitMaxs(int maxStack, int maxLocals) {
-		super.visitMaxs(maxStack + 5 * calls.size(), maxLocals)
+		super.visitMaxs(maxStack + 6 * calls.size(), maxLocals)
 	}
 
 	@Override
 	public void visitEnd() {
 		if(!calls.isEmpty()) {
 			try {
-				List<AbstractInsnNode> objectRefLoadPoints = []
+				Map<AbstractInsnNode, MethodInsnNode> objectRefLoadPoints = [:]
 
 				Analyzer analyzer = new Analyzer(new SourceInterpreter())
-				Frame[] frames = analyzer.analyze(owner, this) as Frame[]
+				Frame[] frames = analyzer.analyze(className, this) as Frame[]
 
 				for (MethodInsnNode methodInsnNode : calls) {
 					Frame frame = frames[instructions.indexOf(methodInsnNode)]
@@ -78,32 +73,35 @@ class MethodWeaver extends MethodNode implements Opcodes {
 					}
 
 					SourceValue stackValue = (SourceValue) frame.getStack(stackSlot)
-					objectRefLoadPoints.addAll stackValue.insns
+					stackValue.insns.each {
+						objectRefLoadPoints[it] = methodInsnNode
+					}
 				}
 
-				for(AbstractInsnNode node : objectRefLoadPoints) {
-					instructions.insert(node, traceInstructions(owner, "lol"))
+				objectRefLoadPoints.each { objectRefSource, callPoint ->
+					instructions.insert(objectRefSource, getFullProbe(callPoint))
 				}
 			} catch (AnalyzerException ex) {
-				LoggerFactory.getLogger(getClass()).warn("Error instrumenting method: {} {}", owner, name, ex)
+				LoggerFactory.getLogger(getClass()).warn("Error instrumenting methodName: {} {}", className, name, ex)
 			}
 		}
 
 		accept(mv)
 
-		LoggerFactory.getLogger(getClass()).trace("Instrumented method: {} {}", owner, name)
+		LoggerFactory.getLogger(getClass()).trace("Instrumented methodName: {} {} {}", className, name)
 	}
 
-	private static InsnList traceInstructions(String owner, String method) {
+	private InsnList getFullProbe(MethodInsnNode callPoint) {
+		int probeID = Tracer.INSTANCE.probes.createProbeIDAt(new InternalCall(className, callPoint.owner, callPoint.name, callPoint.desc))
+
 		InsnList list = new InsnList();
 
 		list.add(new InsnNode(Opcodes.DUP))
 		list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;"))
 		list.add(new FieldInsnNode(Opcodes.GETSTATIC, "org/flightofstairs/honours/capture/agent/Tracer", "INSTANCE", "Lorg/flightofstairs/honours/capture/agent/Tracer;"))
 		list.add(new InsnNode(Opcodes.SWAP))
-		list.add(new LdcInsnNode(owner))
-		list.add(new LdcInsnNode(method))
-		list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "org/flightofstairs/honours/capture/agent/Tracer", "probe", "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V"))
+		list.add(new LdcInsnNode(probeID))
+		list.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "org/flightofstairs/honours/capture/agent/Tracer", "probe", "(Ljava/lang/Class;I)V"))
 
 		return list
 	}

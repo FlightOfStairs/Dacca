@@ -29,7 +29,7 @@ public class JARSource implements Source {
 		this.jvmArgs = new LinkedList<String>(jvmArgs)
 	}
 
-	@Override public String getName() { return jarFile.getName(); }
+	@Override public String getName() { return jarFile.getName() }
 
 	@Override
 	void startSource(int port) {
@@ -43,11 +43,13 @@ public class JARSource implements Source {
 		}
 
 		// Use the aspectj weaver as a java agent.
-		String weaverPath = getWeaverFile().getAbsolutePath();
-		LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaverPath);
-		jpb.jvmArg("-javaagent:" + weaverPath + "=orrery,CH"); // TODO fix
+		String weaverPath = getWeaverFile().getAbsolutePath()
+		LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaverPath)
+		jpb.jvmArg("-javaagent:$weaverPath=" + packages.join(","))
 
-		jpb.jvmArg("-Dorg.flightofstairs.honours.capture.port=" + port);
+		jpb.jvmArg("-noverify") // This should not be required. Look into it.
+
+		jpb.jvmArg("-Dorg.flightofstairs.honours.capture.port=" + port)
 
 		programArgs.each { if(!it.isAllWhitespace()) jpb.arg(it) }
 		jvmArgs.each { if(!it.isAllWhitespace()) jpb.jvmArg(it) }

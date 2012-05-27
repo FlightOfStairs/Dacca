@@ -14,7 +14,7 @@ public class Probes {
 
 	private final AtomicInteger lastProbeID = new AtomicInteger();
 
-	private final BiMap<Call, Integer> probeMap = HashBiMap.create();
+	private final BiMap<InternalCall, Integer> probeMap = HashBiMap.create();
 
 	public Integer getProbeIDAt(final Call call) {
 		synchronized(probesLock.readLock()) {
@@ -22,7 +22,7 @@ public class Probes {
 		}
 	}
 
-	public int createProbeIDAt(final Call call) {
+	public int createProbeIDAt(final InternalCall call) {
 		synchronized(probesLock.writeLock()) {
 			if(!probeMap.containsKey(call)) {
 				probeMap[call] = lastProbeID.getAndIncrement()
@@ -31,7 +31,7 @@ public class Probes {
 		}
 	}
 
-	public Call getCallFromID(final int probeID) {
+	public InternalCall getCallFromID(final int probeID) {
 		synchronized(probesLock.readLock()) {
 			return probeMap.inverse()[probeID];
 		}

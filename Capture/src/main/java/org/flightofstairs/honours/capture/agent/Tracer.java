@@ -4,127 +4,189 @@ import org.flightofstairs.honours.capture.recorder.RemoteRecorder;
 import org.flightofstairs.honours.common.Call;
 import org.slf4j.LoggerFactory;
 
-import java.rmi.ConnectException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+@SuppressWarnings("UnusedDeclaration")
 public enum Tracer {
 	INSTANCE;
 
-	public static final long RECONNECT_DELAY = 500;
-	public static final int MAX_CONNECT_ATTEMPTS = 10;
-
 	public static final long SUBMIT_DELAY = 50;
-	
 	public static final int MAX_WAITING = 50000;
 	
 	public final AtomicInteger waiting = new AtomicInteger(0);
 
 	public final Probes probes = new Probes();
 
-	private final Queue<Call> toSend = new ConcurrentLinkedQueue<Call>();
-
 	private final RemoteRecorder recorder;
 
-	public void probe(int probeID) {
-		INSTANCE.traceCall(INSTANCE.probes.getCallFromID(probeID));
-	}
+	private final ConcurrentMap<InternalCall, AtomicInteger> simpleTraceMap = new ConcurrentHashMap<InternalCall, AtomicInteger>();
+	private final ConcurrentMap<CallPair, AtomicInteger> complexTraceMap = new ConcurrentHashMap<CallPair, AtomicInteger>();
 
-	public void probe(Class callee, String caller, String method) {
-		LoggerFactory.getLogger(Tracer.class).debug(caller + " -> " + callee + " " + method);
-	}
-	
+	// This lock is used in a very deviant way.
+	// The probe() methods are readers, even though they change maps. Submit() is a writer.
+	// This allows threadsafe probe() methods to exclude submit(), while still co-operating with each other.
+	private final ReadWriteLock sendLock = new ReentrantReadWriteLock();
+
 	private Tracer() throws ExceptionInInitializerError {
+		try {
+			int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
 
-		int connectionAttempts = 0;
+			Registry registry = LocateRegistry.getRegistry(port);
+			RemoteRecorder recorder = (RemoteRecorder) registry.lookup("Recorder");
 
-		RemoteRecorder recorder = null;
+			this.recorder = recorder;
 
-		while(MAX_CONNECT_ATTEMPTS > connectionAttempts++) {
-			try {
-				int port = Integer.parseInt(System.getProperty("org.flightofstairs.honours.capture.port"));
+			initSubmit();
+			initShutdown();
 
-				Registry registry = LocateRegistry.getRegistry(port);
-				recorder = (RemoteRecorder) registry.lookup("Recorder");
-
-				break;
-			} catch(Exception e) {
-				LoggerFactory.getLogger(getClass()).warn("Connecting to Dacca failed... retrying.", e);
-
-				try { Thread.sleep(RECONNECT_DELAY); }
-				catch (InterruptedException ex) { LoggerFactory.getLogger(getClass()).warn("Tracer retry wait interrupted.", ex); }
-			}
+		} catch(Exception e) {
+			LoggerFactory.getLogger(getClass()).warn("Connecting to Dacca failed.", e);
+			throw new ExceptionInInitializerError(e);
 		}
+	}
 
-		if(recorder == null) {
-			LoggerFactory.getLogger(getClass()).error("Error initializing tracker.");
-			throw new ExceptionInInitializerError("Can't instantiate Tracer.");
+	public void probe(final int probeID) {
+		sendLock.readLock().lock();
+		try {
+			final InternalCall call = probes.getCallFromID(probeID);
+			simpleTraceMap.putIfAbsent(call, new AtomicInteger(0));
+
+			simpleTraceMap.get(call).incrementAndGet();
+		} finally {
+			sendLock.readLock().unlock();
 		}
+	}
 
-		this.recorder = recorder;
+	public void probe(final Class callee, final int probeID) {
+		sendLock.readLock().lock();
+		try {
+			final CallPair pair = new CallPair(probes.getCallFromID(probeID), callee);
+			complexTraceMap.putIfAbsent(pair, new AtomicInteger(0));
 
-		initSubmit();
-		initShutdown();
+			complexTraceMap.get(pair).incrementAndGet();
+		} finally {
+			sendLock.readLock().unlock();
+		}
 	}
 	
-	public void traceCall(Call call) {
-		toSend.add(call);
-		waiting.incrementAndGet();
-	}
-	
-	
-	private void initShutdown() {
-		Thread thread = new Thread() {
-			@Override public void run() {
-				submit();
-			}
-		};
 
-		Runtime.getRuntime().addShutdownHook(thread);
-	}
 	
 	private void submit() {
 		List<Call> toSendCopy;
 
-		synchronized(toSend) {
-			toSendCopy = new LinkedList<Call>(toSend);
-			toSend.clear();
-			
-			waiting.set(0);
-		}
-		
-		final Map<Call, Integer> callCounts = new HashMap<Call, Integer>();
+		final Map<InternalCall, Integer> simpleTraceMap = new HashMap<InternalCall, Integer>(this.simpleTraceMap.size());
+		final Map<CallPair, Integer> complexTraceMap = new HashMap<CallPair, Integer>(this.complexTraceMap.size());
 
-		for(Call c : toSendCopy) {
-			final int count = callCounts.containsKey(c) ? callCounts.get(c) + 1 : 1;
-			callCounts.put(c, count);
+		sendLock.writeLock().lock();
+		try {
+			for(final Map.Entry<InternalCall, AtomicInteger> entry : this.simpleTraceMap.entrySet())
+				simpleTraceMap.put(entry.getKey(), entry.getValue().getAndSet(0));
+
+			for(final Map.Entry<CallPair, AtomicInteger> entry : this.complexTraceMap.entrySet())
+				complexTraceMap.put(entry.getKey(), entry.getValue().getAndSet(0));
+		} finally {
+			sendLock.writeLock().unlock();
 		}
+
+		final Map<Call, Integer> callCounts = new HashMap<Call, Integer>(complexTraceMap.size());
+
+		for(final Map.Entry<InternalCall, Integer> entry : simpleTraceMap.entrySet()) {
+			if(entry.getValue() == 0) continue;
+
+			final Call call = entry.getKey().getCall();
+
+			if(call == null) continue;
+
+			final int currentCount = callCounts.containsKey(call) ? callCounts.get(call) : 0;
+
+			callCounts.put(call, currentCount + entry.getValue());
+		}
+
+		int simpleCount = callCounts.size();
+
+		for(final Map.Entry<CallPair, Integer> entry : complexTraceMap.entrySet()) {
+			if(entry.getValue() == 0) continue;
+
+			try {
+				final Call call = entry.getKey().call.getCallOnClass(entry.getKey().instanceClass);
+
+				if(call == null) continue;
+
+				final int currentCount = callCounts.containsKey(call) ? callCounts.get(call) : 0;
+
+				callCounts.put(call, currentCount + entry.getValue());
+			} catch (Exception e) {
+				LoggerFactory.getLogger(getClass()).warn("Error finding called class.", e);
+			}
+		}
+
+		if(callCounts.isEmpty()) return;
 
 		try {
 			recorder.addCallCounts(callCounts);
-			toSend.clear();
-		} catch (ConnectException ex) {
-			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
-		} catch (RemoteException ex) {
-			Logger.getLogger(Tracer.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (Exception e) {
+			LoggerFactory.getLogger(getClass()).error("Error submitting calls.", e);
 		}
 	}
 	
 	private void initSubmit() {
 		final Timer timer = new Timer();
 		final TimerTask task = new TimerTask() {
-			
-			@Override
-			public void run() {
+			@Override public void run() {
 				submit();
 			}
 		};
 		timer.schedule(task, SUBMIT_DELAY, SUBMIT_DELAY);
+	}
+
+	private void initShutdown() {
+		Thread thread = new Thread() {
+			@Override public void run() {
+				submit();
+			}
+		};
+		Runtime.getRuntime().addShutdownHook(thread);
+	}
+
+	private static class CallPair {
+		public final InternalCall call;
+		public final Class instanceClass;
+
+
+		private CallPair(final InternalCall call, final Class instanceClass) {
+			this.call = call;
+			this.instanceClass = instanceClass;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			if (this == obj) return true;
+			if (obj == null || getClass() != obj.getClass()) return false;
+
+			final CallPair callPair = (CallPair) obj;
+
+			if (!call.equals(callPair.call)) return false;
+			if (!instanceClass.equals(callPair.instanceClass)) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = call.hashCode();
+			result = 31 * result + instanceClass.hashCode();
+			return result;
+		}
 	}
 }

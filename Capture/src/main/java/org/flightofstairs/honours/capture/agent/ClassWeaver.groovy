@@ -4,8 +4,6 @@ import org.objectweb.asm.ClassAdapter
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.util.CheckClassAdapter
 import org.slf4j.LoggerFactory
 
 import java.lang.instrument.ClassFileTransformer
@@ -31,20 +29,15 @@ public class ClassWeaver implements ClassFileTransformer {
 
 			cr.accept(new ClassAdapter(new ClassAdapter(cw)) {
 
-				public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+				public MethodVisitor visitMethod(int access, String methodName, String desc, String signature, String[] exceptions) {
 
-					MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions)
+					MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions)
 
-					if (mv == null || (access & (Opcodes.ACC_NATIVE & Opcodes.ACC_ABSTRACT)) > 0)
-						return mv;
-
-					return new MethodWeaver(cr.getClassName(), access, name, desc, signature, exceptions, mv)
+					return new MethodWeaver(className, access, methodName, desc, signature, exceptions, mv)
 				}
 			}, ClassReader.EXPAND_FRAMES);
 
-			PrintWriter pw = new PrintWriter(System.out);
-			CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), false, pw)
-
+			LoggerFactory.getLogger(getClass()).debug("Transformed {}", className)
 			return cw.toByteArray()
 
 		} catch (Exception e) {
