@@ -31,7 +31,7 @@ public class CallGraph implements Serializable {
 
 	private transient Set<CallGraphListener> listeners;
 		
-	@Requires({ call != null })
+	@Requires({ call != null && call.callee != null && call.caller != null && call.method != null})
 	public void addCall(final Call call) {
 		synchronized(graphLock.writeLock()) {
 
