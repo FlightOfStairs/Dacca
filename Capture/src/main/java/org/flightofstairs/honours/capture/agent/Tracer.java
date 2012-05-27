@@ -32,13 +32,12 @@ public enum Tracer {
 
 	private final RemoteRecorder recorder;
 
-	public void probe(Integer probeID) {
+	public void probe(int probeID) {
 		INSTANCE.traceCall(INSTANCE.probes.getCallFromID(probeID));
-		LoggerFactory.getLogger(Tracer.class).debug("Logged call " + INSTANCE.probes.getCallFromID(probeID).toString());
 	}
 
-	public void probe(Class clazz) {
-		LoggerFactory.getLogger(Tracer.class).debug("Class ${clazz}");
+	public void probe(Class callee, String caller, String method) {
+		LoggerFactory.getLogger(Tracer.class).debug(caller + " -> " + callee + " " + method);
 	}
 	
 	private Tracer() throws ExceptionInInitializerError {

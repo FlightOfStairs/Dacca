@@ -46,6 +46,12 @@
 
         <dependency>
             <groupId>asm</groupId>
+            <artifactId>asm-util</artifactId>
+            <version>3.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>asm</groupId>
             <artifactId>asm-analysis</artifactId>
             <version>3.3.1</version>
         </dependency>
