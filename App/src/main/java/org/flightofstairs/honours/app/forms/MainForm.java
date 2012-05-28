@@ -13,6 +13,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.rmi.RemoteException;
+import org.flightofstairs.honours.app.dialogs.AttachDialog;
 
 public class MainForm extends javax.swing.JFrame {
 	public MainForm() {
@@ -30,6 +31,7 @@ public class MainForm extends javax.swing.JFrame {
         menubar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newMenuItem = new javax.swing.JMenuItem();
+        attachMenuItem = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         openMenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
@@ -69,6 +71,15 @@ public class MainForm extends javax.swing.JFrame {
             }
         });
         fileMenu.add(newMenuItem);
+
+        attachMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        attachMenuItem.setText("Attach to running JVM");
+        attachMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                attachMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(attachMenuItem);
         fileMenu.add(jSeparator1);
 
         openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
@@ -171,7 +182,7 @@ public class MainForm extends javax.swing.JFrame {
 		
 		launchDialog.setVisible(true);
 		
-		if(launchDialog.launched()) launch(launchDialog.getLaunchConfiguration());
+		if(launchDialog.launched()) launch(launchDialog.getSource());
 	}//GEN-LAST:event_newMenuItemActionPerformed
 
 	private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
@@ -230,8 +241,17 @@ public class MainForm extends javax.swing.JFrame {
 			((SessionPanel) tabPanel.getSelectedComponent()).showInfo();
 	}//GEN-LAST:event_infoMenuItemActionPerformed
 
+	private void attachMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachMenuItemActionPerformed
+		AttachDialog attachDialog = new AttachDialog(this, true);
+		
+		attachDialog.setVisible(true);
+		
+		if(attachDialog.isAccepted()) launch(attachDialog.getSource());
+	}//GEN-LAST:event_attachMenuItemActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem attachMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpMenuItem;
@@ -302,7 +322,7 @@ public class MainForm extends javax.swing.JFrame {
 		
 						launchDialog.setVisible(true);
 
-						if(launchDialog.launched()) form.launch(launchDialog.getLaunchConfiguration());
+						if(launchDialog.launched()) form.launch(launchDialog.getSource());
 					}
 				}
 			}

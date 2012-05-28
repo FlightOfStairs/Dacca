@@ -183,7 +183,7 @@ public class LaunchDialog extends javax.swing.JDialog {
 		return launched;
 	}
 	
-	public Source getLaunchConfiguration() {
+	public Source getSource() {
 		if(!launched()) throw new IllegalStateException("Launch configuration useless without info.");
 
 		return new JARSource(
