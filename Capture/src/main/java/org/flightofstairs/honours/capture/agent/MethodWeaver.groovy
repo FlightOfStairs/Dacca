@@ -82,13 +82,13 @@ class MethodWeaver extends MethodNode implements Opcodes {
 					instructions.insert(objectRefSource, getFullProbe(callPoint))
 				}
 			} catch (AnalyzerException ex) {
-				LoggerFactory.getLogger(getClass()).warn("Error instrumenting methodName: {} {}", className, name, ex)
+				LoggerFactory.getLogger(getClass()).warn("Error instrumenting method: {} {}", className, name, ex)
 			}
 		}
 
 		accept(mv)
 
-		LoggerFactory.getLogger(getClass()).trace("Instrumented methodName: {} {} {}", className, name)
+		LoggerFactory.getLogger(getClass()).trace("Instrumented method: {} {} {}", className, name)
 	}
 
 	private InsnList getFullProbe(MethodInsnNode callPoint) {
