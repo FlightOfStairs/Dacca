@@ -2,6 +2,11 @@ package org.flightofstairs.honours.capture.agent;
 
 import org.flightofstairs.honours.common.Call;
 import org.objectweb.asm.Type;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 public class InternalCall {
 
@@ -28,13 +33,55 @@ public class InternalCall {
 	}
 
 	public Call getCallOnClass(Class instanceClass) throws ClassNotFoundException, NoSuchMethodException {
+
+		String calleeName = null;
+
+		try {
+			calleeName = getImplementingClass(instanceClass, methodName, desc).getCanonicalName();
+		} catch (ClassNotFoundException e) {
+			LoggerFactory.getLogger(getClass()).warn("Couldn't find method on instance class " + instanceClass.toString() + " " + methodName + desc, e);
+		}
+
 		Call call = new Call(
 				sanitize(Type.getObjectType(caller).getClassName()),
-				sanitize(instanceClass.getCanonicalName()),
+				sanitize(calleeName),
 				methodName
-			);
+		);
 
 		return call.getCallee() == null || call.getCaller() == null ? null : call;
+	}
+
+	private static Class getImplementingClass(final Class instance, final String methodName, final String desc) throws ClassNotFoundException {
+		Class[] arguments = getArgumentClasses(desc);
+
+		Class declaringClass = instance;
+
+		while(! declaringClass.getSuperclass().equals(Object.class)) {
+			Method[] methods = declaringClass.getDeclaredMethods();
+
+			for(Method method : methods) {
+				if(method.getName().equals(methodName) && Arrays.deepEquals(arguments, method.getParameterTypes())) return declaringClass;
+			}
+
+			if(Modifier.isAbstract(declaringClass.getSuperclass().getModifiers())) return declaringClass;
+
+			declaringClass = declaringClass.getSuperclass();
+		}
+
+		return declaringClass;
+	}
+
+	private static Class[] getArgumentClasses(final String desc) throws ClassNotFoundException {
+		final Type[] argumentTypes = Type.getArgumentTypes(desc);
+
+		final int count = argumentTypes.length; // Tiny performance gain, but may be helpful given use of InternalCall.
+
+		final Class[] argumentClasses = new Class[count];
+
+		for(int i = 0; i < count; i++)
+			argumentClasses[i] = getClassFromName(argumentTypes[i].getClassName());
+
+		return argumentClasses;
 	}
 
 	private static Class getClassFromName(final String className) throws ClassNotFoundException {
