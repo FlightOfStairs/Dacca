@@ -37,7 +37,6 @@ public class ClassWeaver implements ClassFileTransformer {
 				}
 			}, ClassReader.EXPAND_FRAMES);
 
-			LoggerFactory.getLogger(getClass()).debug("Transformed {}", className)
 			return cw.toByteArray()
 
 		} catch (Exception e) {
