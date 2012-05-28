@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArraySet
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import groovy.transform.WithReadLock
+import groovy.transform.WithWriteLock
 
 public class CallGraph implements Serializable {
 	
@@ -32,68 +34,58 @@ public class CallGraph implements Serializable {
 	private transient Set<CallGraphListener> listeners;
 		
 	@Requires({ call != null && call.callee != null && call.caller != null && call.method != null})
+	@WithWriteLock("graphLock")
 	public void addCall(final Call call) {
-		synchronized(graphLock.writeLock()) {
+		graph.addVertex(call.caller);
+		graph.addVertex(call.callee);
 
-			graph.addVertex(call.caller);
-			graph.addVertex(call.callee);
+		def existing = graph.findEdge(call.caller, call.callee);
 
-			def existing = graph.findEdge(call.caller, call.callee);
-
-			if(existing == null) {
-				existing = new ClassRelation();
-				graph.addEdge(existing, call.caller, call.callee);
-			}
-			existing.addCall(call);
-
-			lastUpdate = System.currentTimeMillis();
-
+		if(existing == null) {
+			existing = new ClassRelation();
+			graph.addEdge(existing, call.caller, call.callee);
 		}
+		existing.addCall(call);
+
+		lastUpdate = System.currentTimeMillis();
 	}
 	
 	@Requires({ callCounts != null })
+	@WithWriteLock("graphLock")
 	public void addCallCounts(final Map<Call, Integer> callCounts) {
-		synchronized(graphLock.writeLock()) {
+		callCounts.each { call, count ->
+			addCall(call);
 
-			callCounts.each { call, count ->
-				addCall(call);
+			def edge = graph.findEdge(call.caller, call.callee);
 
-				def edge = graph.findEdge(call.caller, call.callee);
-
-				edge.addCall(call, count - 1);
-			}
+			edge.addCall(call, count - 1);
 		}
 	}
 	
 	@Requires({ other != null })
 	@Ensures({ graph.getVertices().containsAll(other.graph.getVertices()) })
+	@WithWriteLock("graphLock")
 	public void merge(CallGraph other) {
-		synchronized(graphLock.writeLock()) {
-
-			for(Call call : other.calls(false))	addCall(call);
-
-		}
+		for(Call call : other.calls(false))	addCall(call);
 	}
 	
 	@Ensures({ result != null && result.size() == graph.getVertexCount()})
+	@WithReadLock("graphLock")
 	public List<String> classes() {
-		synchronized(graphLock.readLock()) {
-			def results = [];
-			results.addAll graph.getVertices();
-			return results
-		}
+		def results = []
+		results.addAll graph.getVertices()
+		return results
 	}
 	
 	@Ensures({ result != null && result.size() >= graph.getEdgeCount() })
+	@WithReadLock("graphLock")
 	public List<Call> calls(boolean onlyUnique = true) {
-		synchronized(graphLock.readLock()) {
-			def results = [];
+		def results = [];
 
-			for(ClassRelation relation in graph.getEdges()) {
-				results.addAll relation.getCalls(onlyUnique);
-			}
-			return results
+		for(ClassRelation relation in graph.getEdges()) {
+			results.addAll relation.getCalls(onlyUnique);
 		}
+		return results
 	}
 
 	/**
@@ -101,13 +93,12 @@ public class CallGraph implements Serializable {
 	 * User MUST NOT make changes to graph.
 	 */
 	@Requires({ user != null })
+	@WithReadLock("graphLock")
 	public void runExclusively(ExclusiveGraphUser user) {
-		synchronized(graphLock.readLock()) {
-			user.run(this);
-		}
+		user.run(this);
 	}
-	
-	@Ensures({ result != null }) // TODO synchronise?
+
+	@Ensures({ result != null })
 	public Graph<String, ClassRelation> getGraph() {
 		if(unmodifiableGraph == null)
 			unmodifiableGraph = Graphs.unmodifiableDirectedGraph(graph);
@@ -117,13 +108,12 @@ public class CallGraph implements Serializable {
 	
 	@Requires({ ! file.isDirectory() })
 	@Ensures({ file.exists() })
+	@WithReadLock("graphLock")
 	public void save(File file) {
-		synchronized(graphLock.readLock()) {
-	        LoggerFactory.getLogger(CallGraph.class).debug("Saving callgraph: {}", file);
+        LoggerFactory.getLogger(CallGraph.class).debug("Saving callgraph: {}", file);
 
-			file.withObjectOutputStream() { outStream ->
-				outStream << this
-			}
+		file.withObjectOutputStream() { outStream ->
+			outStream << this
 		}
 	}
 	
@@ -145,7 +135,7 @@ public class CallGraph implements Serializable {
 	}
 	
 	@Requires({ listeners == null })
-	@Ensures({ listerners != null })
+	@Ensures({ listeners != null })
 	private void initListeners() {
 		listeners = new CopyOnWriteArraySet<CallGraphListener>()
 
@@ -182,15 +172,13 @@ public class CallGraph implements Serializable {
 
 	public int numberOfRelations() { return graph.getEdgeCount(); }
 
+	@WithReadLock("graphLock")
 	public int numberOfMethods() {
-		synchronized(graphLock.readLock()) {
-			return graph.getEdges().inject(0) { total, item -> total + item.callVariety() }
-		}
+		return graph.getEdges().inject(0) { total, item -> total + item.callVariety() }
 	}
 
+	@WithReadLock("graphLock")
 	public int numberOfCalls() {
-		synchronized(graphLock.readLock()) {
-			return graph.getEdges().inject(0) { total, item -> total + item.countAll() }
-		}
+		return graph.getEdges().inject(0) { total, item -> total + item.countAll() }
 	}
 }

@@ -110,21 +110,4 @@ class GraphTest extends GroovyTestCase {
 		assertEquals(8, a.calls().size());
 		assertEquals(9, a.calls(false).size());
 	}
-	
-	void testExclusive() {
-		CallGraph g = new CallGraph();
-		
-		Thread t = new Thread({
-				g.runExclusively({ sleep(500); it.addCall(new Call("a", "b", "c"));
-				} as ExclusiveGraphUser)
-			} as Runnable);
-		
-		assertEquals(0, g.classes().size());
-		
-		t.start();
-		
-		sleep(100);
-		
-		assertEquals(2, g.classes().size());
-	}
 }
