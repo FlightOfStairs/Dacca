@@ -21,7 +21,7 @@ public class RMIRecorder extends UnicastRemoteObject implements Recorder, Remote
 	private final Source source;
 
 	private final CallGraph graph = new CallGraph();
-		
+
 	public RMIRecorder(Source source) throws RemoteException {
 		super();
 

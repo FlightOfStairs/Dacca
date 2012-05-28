@@ -1,7 +1,6 @@
 package org.flightofstairs.honours.capture.sources
 
 import jlibs.core.lang.JavaProcessBuilder
-import org.flightofstairs.honours.capture.agent.Agent
 import org.flightofstairs.honours.capture.recorder.RMIRecorder
 import org.gcontracts.annotations.Requires
 import org.slf4j.LoggerFactory
@@ -43,7 +42,7 @@ public class JARSource implements Source {
 		}
 
 		// Use the aspectj weaver as a java agent.
-		String weaverPath = getWeaverFile().getAbsolutePath()
+		String weaverPath = AgentUtils.getWeaverFile()
 		LoggerFactory.getLogger(RMIRecorder.class).info("Using [{}] for weaver.", weaverPath)
 		jpb.jvmArg("-javaagent:$weaverPath=" + packages.join(","))
 
@@ -79,16 +78,5 @@ public class JARSource implements Source {
 		} finally {
 			jarStream.close()
 		}
-	}
-
-	private File getWeaverFile() {
-		String weaverPath = Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-
-		File weaverFile = new File(weaverPath)
-
-		if(! weaverFile.exists())
-			throw new FileNotFoundException("Can't find AspectJ weaver on cp.");
-
-		return weaverFile
 	}
 }
