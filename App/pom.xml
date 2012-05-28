@@ -19,8 +19,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
 	      <mainClass>org.flightofstairs.honours.app.forms.MainForm</mainClass>
 	    </manifest>
 	    <manifestEntries>
-	      <Premain-Class>org.flightofstairs.honours.capture.agent.Agent</Premain-Class>
-	      <Can-Redefine-Classes>true</Can-Redefine-Classes>
+            <Premain-Class>org.flightofstairs.honours.capture.agent.Agent</Premain-Class>
+            <Agent-Class>org.flightofstairs.honours.capture.agent.Agent</Agent-Class>
+            <Can-Redefine-Classes>true</Can-Redefine-Classes>
           <Can-Retransform-Classes>true</Can-Retransform-Classes>
 	    </manifestEntries>
 	  </archive>
@@ -77,12 +78,19 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <artifactId>closabletabbedpane</artifactId>
       <version>1.0</version>
     </dependency>
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>1.4</version>
       <type>jar</type>
     </dependency>
+
+      <dependency>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+          <version>1.7</version>
+      </dependency>
   </dependencies>
   
   <repositories>
