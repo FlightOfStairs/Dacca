@@ -33,7 +33,7 @@ class MethodWeaver extends MethodNode implements Opcodes {
 	@Override
 	void visitMethodInsn(final int opcode, final String owner, final String name, final String desc) {
 
-		if(opcode == INVOKESPECIAL || opcode == INVOKESTATIC) {
+		if((opcode == INVOKESPECIAL || opcode == INVOKESTATIC) && ! name.equals("<init>")) {
 			int probeID = Tracer.INSTANCE.probes.createProbeIDAt(new InternalCall(className, owner, name, desc))
 
 			super.visitFieldInsn(GETSTATIC, "org/flightofstairs/honours/capture/agent/Tracer", "INSTANCE", "Lorg/flightofstairs/honours/capture/agent/Tracer;")
