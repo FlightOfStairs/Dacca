@@ -18,7 +18,22 @@ class Agent {
 
 		LoggerFactory.getLogger(Agent.class).debug("Setting port: {}", port)
 
-		inst.addTransformer(new ClassWeaver(inst, options.replaceAll("\\.", "/").tokenize(",").drop(1) as List<String>), true)
+		List<String> packages = options.replaceAll("\\.", "/").tokenize(",").drop(1) as List<String>
+
+		inst.addTransformer(new ClassWeaver(inst, packages), true)
+
+		List<String> sourcePackages = options.tokenize(",").drop(1)
+
+		List<Class> classes = inst.getAllLoadedClasses()
+
+		List<Class> reloadClasses = []
+
+		classes.each { clazz ->
+			if(packages.any({ clazz.getName().startsWith(it) }))
+				reloadClasses << clazz
+		}
+
+		inst.retransformClasses((Class[]) reloadClasses.toArray());
 
 		LoggerFactory.getLogger(Agent.class).debug "Dacca agent attached and started."
 	}
